@@ -1,5 +1,9 @@
-from config import Config, DevelopmentConfig, ProductionConfig
-from models import baits, db
+from config import Config, DevelopmentConfig, ProductionConfig 
+from models import db # Database Module
+
+# blue prints
+from blueprints.auth import auth_bp # Importing Auth Blueprint
+
 
 from flask import Flask, request, render_template, jsonify, url_for
 from flask_sqlalchemy import SQLAlchemy
@@ -13,14 +17,35 @@ db.init_app(app) #initializing Db
 
 
 @app.route("/", methods=['GET'])
-def get_baits():
-    baits = baits.query.get('id').fetchon()
-    
-   
-    
-    #return jsonify([bait.to_dict() for bait in baits]), 200
-    return jsonify({'message':"Processing Baits"}), 200
+def index():
+    return jsonify({"message":"Homepage"})
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def register_blueprints():
+    app.register_blueprint(auth_bp) # Registering Auth Blueprint
 
 
 
@@ -37,5 +62,7 @@ def test_db_connection(): # Function to test DB connection
 
 if __name__ == "__main__":
     test_db_connection()
+    register_blueprints()
+
     app.run(debug=True)
 

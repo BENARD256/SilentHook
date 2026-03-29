@@ -82,7 +82,7 @@ class GFG(Resource):
 # Linking Created API resource to the  Router '/'
 api.add_resource(GFG, '/gfg')
 
-#Adding Resouce to API
+#Adding Multiple Resouces to API
 
 api.add_resource(BookResource, '/books', '/books/<int:book_id>')
 
