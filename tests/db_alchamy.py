@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///friends.db' # Path to where the database file is located
 
-#Initialising the Database
+#Initialising the Database			
 
 db = SQLAlchemy(app) #initialisation
 

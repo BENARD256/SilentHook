@@ -43,6 +43,7 @@ class BookResource(Resource):
             
         return {'Error':'Book Not Found'}, 404 # book not found
 
+
     def post(self):
         new_book = request.json
         books.append(new_book)
@@ -82,7 +83,7 @@ class GFG(Resource):
 # Linking Created API resource to the  Router '/'
 api.add_resource(GFG, '/gfg')
 
-#Adding Multiple Resouces to API
+#Adding Resouce to API
 
 api.add_resource(BookResource, '/books', '/books/<int:book_id>')
 
