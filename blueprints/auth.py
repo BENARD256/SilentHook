@@ -1,5 +1,6 @@
 from models import db, Users # Database & User Model
 from schemas import Userschema, ValidationError # Json Schema for User Model
+from utils import api_response #Function for Standardizing API Responses
 
 
 from flask import Blueprint, request, jsonify
@@ -13,21 +14,6 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/auth') # Blueprint for Authen
 
 # Users Json Schema Instance
 user_schema = Userschema()
-
-
-# Standardizes API Responses with a consistent structure
-token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
-
-def api_response(data=None, message=None, status='success', code=200):
-
-    payload = {'status': status}
-    
-    if message:
-        payload['message'] = message
-    if data:
-        payload['data'] = data
-
-    return jsonify(payload), code
 
 
 @auth_bp.route("/users", methods=['GET'])

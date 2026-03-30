@@ -1,9 +1,10 @@
 from config import Config, DevelopmentConfig, ProductionConfig 
 from models import db # Database Module
+from utils import api_response # Function for API response standardization
 
 # blue prints
-from blueprints.auth import auth_bp # Importing Auth Blueprint
-
+from blueprints.auth import auth_bp # Auth Blueprint
+from blueprints.baits import baits_bp # Baits Blueprint
 
 from flask import Flask, request, render_template, jsonify, url_for
 from flask_sqlalchemy import SQLAlchemy
@@ -46,7 +47,7 @@ def index():
 
 def register_blueprints():
     app.register_blueprint(auth_bp) # Registering Auth Blueprint
-
+    app.register_blueprint(baits_bp) # Registering Baits Blueprint
 
 
 def test_db_connection(): # Function to test DB connection
