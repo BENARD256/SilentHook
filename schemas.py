@@ -13,7 +13,7 @@ class Userschema(SQLAlchemyAutoSchema):
 
     username = auto_field(required=True)
     email = auto_field(required=True, validate=validate.Email())
-    password = auto_field(required=True) #, validate=validate.Length(min=8))
+    password = auto_field(required=True,load_only=True) # Be sure Its not loaded in API responses  #, validate=validate.Length(min=8))
     
 
 class Baitsschema(SQLAlchemyAutoSchema):

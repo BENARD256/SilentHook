@@ -7,11 +7,28 @@ from werkzeug.security import generate_password_hash, check_password_hash # For 
 
 # Blueprint for Authentication Routes
 
+
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth') # Blueprint for Authentication Routes
 
 
 # Users Json Schema Instance
 user_schema = Userschema()
+
+
+# Standardizes API Responses with a consistent structure
+token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+
+def api_response(data=None, message=None, status='success', code=200):
+
+    payload = {'status': status}
+    
+    if message:
+        payload['message'] = message
+    if data:
+        payload['data'] = data
+
+    return jsonify(payload), code
+
 
 @auth_bp.route("/users", methods=['GET'])
 @auth_bp.route("/users/<int:user_id>", methods=['GET'])
@@ -66,7 +83,12 @@ def register():
     db.session.add(user)
     db.session.commit()
 
-    return user_schema.dump(user), 201 # Created
+    #return user_schema.dump(user), 201 # Created
+    return api_response(
+        data={"user": user_schema.dump(user), "token": token},
+        message="Account created successfully",
+        code=201
+    )
 
 
 @auth_bp.route("/login", methods=['POST'])
@@ -83,16 +105,25 @@ def login():
     # Authenticating User Logins
     user = Users.query.filter_by(email=user_logins.email).first()
 
-    if not user and check_password_hash(user.password, user_logins.password):
+    if not user or not check_password_hash(user.password, user_logins.password):
         return {"error": "Invalid email or password"}, 401 # Unauthorized
 
-    return user_schema.dump(user), 200 # OK  
+    #return user_schema.dump(user), 200 # OK  
+    return api_response(
+        data={"user": user_schema.dump(user), "token": token},
+        message="Logged in successfully",
+        code=200
+    )
     
 
 @auth_bp.route("/logout", methods=['POST'])
 def logout():
     # Logout Logic Token Invalidation, Session Clearing
-    pass
+    #return jsonify({"status": "success", "message": "Logged out successfully"}), 200 # OK
+    return api_response(
+        message="Logged out successfully",
+        code=200
+    )
 
 
 
