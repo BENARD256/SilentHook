@@ -1,20 +1,21 @@
-from config import Config, DevelopmentConfig, ProductionConfig 
+from config import Config, DevelopmentConfig, ProductionConfig
 from models import db # Database Module
-from utils import api_response # Function for API response standardization
-
 # blue prints
 from blueprints.auth import auth_bp # Auth Blueprint
 from blueprints.baits import baits_bp # Baits Blueprint
+from blueprints.triggers import triggers_bp # Triggers Blueprint
 
-from flask import Flask, request, render_template, jsonify, url_for
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, request, render_template, jsonify
+from flask_jwt_extended import JWTManager
 
 
 app = Flask(__name__)
-    
-app.config.from_object(DevelopmentConfig) # Db Connection String
-    
+
+app.config.from_object(DevelopmentConfig) # DB Connection String
+
 db.init_app(app) #initializing Db
+
+jwt = JWTManager(app) # Initializing JWT Manager
 
 
 @app.route("/", methods=['GET'])
@@ -48,6 +49,7 @@ def index():
 def register_blueprints():
     app.register_blueprint(auth_bp) # Registering Auth Blueprint
     app.register_blueprint(baits_bp) # Registering Baits Blueprint
+    app.register_blueprint(triggers_bp) # Registering Triggers Blueprint
 
 
 def test_db_connection(): # Function to test DB connection

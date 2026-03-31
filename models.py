@@ -28,12 +28,13 @@ class Baits(db.Model):
 class Triggers(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     token_id = db.Column(db.String(50), nullable=False,unique=True) # has to be unique
-    reminder = db.Column(db.String(50), nullable=False)
-    callback_url = db.Column(db.String(50))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id')) # foregin key to user table
-    bait_id = db.Column(db.Integer, db.ForeignKey('baits.id')) # foregin key to bait table 
+    reminder = db.Column(db.String(255), nullable=False)
+    callback_email = db.Column(db.String(50))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id')) # foregin key to users table
+    bait_id = db.Column(db.Integer, db.ForeignKey('baits.id')) # foregin key to baits table 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
+    # Relationships for backward access (Join)
+    
     def __repr__(self):
         return f"<trigger {self.id}>"
     

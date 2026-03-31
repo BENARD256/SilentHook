@@ -11,6 +11,10 @@ host = quote_plus("127.0.0.1")
 class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # JWT Config
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    
+
 
 class DevelopmentConfig(Config):
     DEBUG = True
@@ -21,3 +25,5 @@ class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = f"mysql+mysqlconnector://{username}:{password}@{host}:3306/{database_name}"
 
 
+class JWT(Config):
+    JWT_SECRET_KEY = "authentication_jwt_secret" #os.getenv("authentication_jwt_secret")

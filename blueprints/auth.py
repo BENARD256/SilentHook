@@ -4,6 +4,8 @@ from utils import api_response #Function for Standardizing API Responses
 
 
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import create_access_token
+
 from werkzeug.security import generate_password_hash, check_password_hash # For Password Hashing & Validation
 
 # Blueprint for Authentication Routes
@@ -94,9 +96,12 @@ def login():
     if not user or not check_password_hash(user.password, user_logins.password):
         return {"error": "Invalid email or password"}, 401 # Unauthorized
 
+    # JWT Token Generation
+    jwt_token = create_access_token(identity=user.id)
+
     #return user_schema.dump(user), 200 # OK  
     return api_response(
-        data={"user": user_schema.dump(user), "token": token},
+        data={"user": user_schema.dump(user), "JWT": jwt_token},
         message="Logged in successfully",
         code=200
     )

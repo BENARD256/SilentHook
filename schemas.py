@@ -19,7 +19,8 @@ class Userschema(SQLAlchemyAutoSchema):
 class Baitsschema(SQLAlchemyAutoSchema):
     class Meta:
         model = Baits
-        load_instance = True
+        load_instance = True # True returns database models instead of dictionary
+
 
     name = auto_field(required=True)
     abbrev = auto_field(required=True)
@@ -32,7 +33,15 @@ class Baitsschema(SQLAlchemyAutoSchema):
 class Triggerschema(SQLAlchemyAutoSchema):
     class Meta:
         model = Triggers
-        load_instance = True
+        load_instance = True #False # If True, deserialization returns database model instances instead of dictionary
+        sqla_session = db.session # SQLAlchemy session for database operations
+    id = auto_field(required=True)
+    token_id = auto_field(required=True)
+    reminder = auto_field(required=True)
+    callback_email = auto_field(required=False, validate=validate.Email())
+    user_id = auto_field(required=False)
+    bait_id = auto_field(required=False)
+    created_at = auto_field(dump_only=True) # Not required in input, only in output
 
 
 class Alertschema(SQLAlchemyAutoSchema):
