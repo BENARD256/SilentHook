@@ -13,7 +13,9 @@ class Config:
 
     # JWT Config
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-    
+
+    # Call_Back_Url
+    CALL_BACK_URL = "http://127.0.0.1/callback.png"
 
 
 class DevelopmentConfig(Config):
@@ -24,6 +26,3 @@ class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = f"mysql+mysqlconnector://{username}:{password}@{host}:3306/{database_name}"
 
-
-class JWT(Config):
-    JWT_SECRET_KEY = "authentication_jwt_secret" #os.getenv("authentication_jwt_secret")

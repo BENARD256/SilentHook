@@ -4,6 +4,7 @@ from marshmallow import validate, ValidationError
 
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, auto_field
 
+import re # IP Validation Lib
 
 class Userschema(SQLAlchemyAutoSchema):
     class Meta:
@@ -20,8 +21,6 @@ class Baitsschema(SQLAlchemyAutoSchema):
     class Meta:
         model = Baits
         load_instance = True # True returns database models instead of dictionary
-
-
     name = auto_field(required=True)
     abbrev = auto_field(required=True)
     type = auto_field(required=True)
@@ -36,7 +35,7 @@ class Triggerschema(SQLAlchemyAutoSchema):
         load_instance = True #False # If True, deserialization returns database model instances instead of dictionary
         sqla_session = db.session # SQLAlchemy session for database operations
     id = auto_field(required=True)
-    token_id = auto_field(required=True)
+    token = auto_field(required=True)
     reminder = auto_field(required=True)
     callback_email = auto_field(required=False, validate=validate.Email())
     user_id = auto_field(required=False)
@@ -47,12 +46,36 @@ class Triggerschema(SQLAlchemyAutoSchema):
 class Alertschema(SQLAlchemyAutoSchema):
     class Meta:
         model = Alerts
-        load_instance = True
+        load_instance = True # Request bring in Json Data
+        sqla_session = db.session
+
+    token = auto_field(required=True)
+    source_ip = auto_field(required=True, validate=validate.Regexp(
+        r"^(\d{1,3}\.){3}\d{1,3}$",
+        error="Invalid IP address format"
+    ))
+    user_agent = auto_field(required=True)
+
+    event_time = auto_field(required=True)
+ 
 
 class Watcher_eventschema(SQLAlchemyAutoSchema):
     class Meta:
         model = Watcher_events
-        load_instance = True
+        load_instance = True # json loads db object
+        sqla_session = db.session
+
+    token = auto_field(required=True)
+    user = auto_field(required=True)
+    path = auto_field(required=True)
+    access = auto_field(required=True)
+    process = auto_field(required=True)
+    source_ip = auto_field(required=True,validate=validate.Regexp(
+        r"^(\d{1,3}\.){3}\d{1,3}$",
+        error="Invalid IP address format"
+    ))
+    event_time = auto_field(required=True)
+
 
 class Mysql_eventschema(SQLAlchemyAutoSchema):
     class Meta:

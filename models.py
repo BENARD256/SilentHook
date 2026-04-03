@@ -27,7 +27,7 @@ class Baits(db.Model):
 
 class Triggers(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    token_id = db.Column(db.String(50), nullable=False,unique=True) # has to be unique
+    token = db.Column(db.String(50), nullable=False,unique=True) # has to be unique
     reminder = db.Column(db.String(255), nullable=False)
     callback_email = db.Column(db.String(50))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id')) # foregin key to users table
@@ -41,8 +41,7 @@ class Triggers(db.Model):
 
 class Alerts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    token = db.Column(db.String(50), nullable=False) 
-    token_id = db.Column(db.String(50), db.ForeignKey('triggers.token_id'), nullable=False) # token id to identify the trigger
+    token = db.Column(db.String(50), db.ForeignKey('triggers.token'), nullable=False) # token id to identify the trigger
     source_ip = db.Column(db.String(50), nullable=False)
     user_agent = db.Column(db.String(255), nullable=False)
     event_time = db.Column(db.DateTime, default=datetime.utcnow)
@@ -53,10 +52,11 @@ class Alerts(db.Model):
 
 class Watcher_events(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    token_id = db.Column(db.String(50), db.ForeignKey('triggers.token_id'), nullable=False)
+    token = db.Column(db.String(50), db.ForeignKey('triggers.token'), nullable=False)
     user = db.Column(db.String(50), nullable=False)
-    file_path = db.Column(db.String(255), nullable=False)
-    access_mask = db.Column(db.String(50), nullable=False)
+    path = db.Column(db.String(255), nullable=False)
+    access = db.Column(db.String(50), nullable=False)
+    process = db.Column(db.String(255), nullable=False)
     source_ip = db.Column(db.String(50), nullable=False)
     event_time = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -66,7 +66,7 @@ class Watcher_events(db.Model):
 
 class Mysql_events(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    token_id = db.Column(db.String(50), db.ForeignKey('triggers.token_id'), nullable=False)
+    token = db.Column(db.String(50), db.ForeignKey('triggers.token'), nullable=False)
     user = db.Column(db.String(50), nullable=False)
     hostname = db.Column(db.String(255), nullable=False)
     db_name = db.Column(db.String(50), nullable=False)
@@ -79,7 +79,7 @@ class Mysql_events(db.Model):
 
 class Notifications(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    token_id = db.Column(db.String(50), db.ForeignKey('triggers.token_id'), nullable=False)
+    token = db.Column(db.String(50), db.ForeignKey('triggers.token'), nullable=False)
     sent_to_addr = db.Column(db.String(50), nullable=False)
     sent_at = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.Enum('sent', 'failed'), default='sent')

@@ -1,9 +1,11 @@
 from config import Config, DevelopmentConfig, ProductionConfig
 from models import db # Database Module
+
 # blue prints
 from blueprints.auth import auth_bp # Auth Blueprint
 from blueprints.baits import baits_bp # Baits Blueprint
 from blueprints.triggers import triggers_bp # Triggers Blueprint
+from blueprints.alerts import callback_bp # Alerts (callback) Blueprint
 
 from flask import Flask, request, render_template, jsonify
 from flask_jwt_extended import JWTManager
@@ -16,6 +18,7 @@ app.config.from_object(DevelopmentConfig) # DB Connection String
 db.init_app(app) #initializing Db
 
 jwt = JWTManager(app) # Initializing JWT Manager
+
 
 
 @app.route("/", methods=['GET'])
@@ -50,7 +53,7 @@ def register_blueprints():
     app.register_blueprint(auth_bp) # Registering Auth Blueprint
     app.register_blueprint(baits_bp) # Registering Baits Blueprint
     app.register_blueprint(triggers_bp) # Registering Triggers Blueprint
-
+    app.register_blueprint(callback_bp) # Registering Alerts Blueprint
 
 def test_db_connection(): # Function to test DB connection
     try:
@@ -67,5 +70,5 @@ if __name__ == "__main__":
     test_db_connection()
     register_blueprints()
 
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
 
