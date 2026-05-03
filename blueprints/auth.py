@@ -3,23 +3,23 @@ from schemas import Userschema, ValidationError # Json Schema for User Model
 from utils import api_response #Function for Standardizing API Responses
 
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from flask_jwt_extended import create_access_token
 
 from werkzeug.security import generate_password_hash, check_password_hash # For Password Hashing & Validation
 
-# Blueprint for Authentication Routes
+# Blueprint for Authentication Page Routes & APIs
 
 
-auth_bp = Blueprint('auth', __name__, url_prefix='/auth') # Blueprint for Authentication Routes
-
+auth_bp = Blueprint('auth', __name__, url_prefix='/auth') # Blueprint for Auth Page Routes
+auth_api_bp = Blueprint('auth_api', __name__, url_prefix='/api/v1/auth') # api route for APIS
 
 # Users Json Schema Instance
 user_schema = Userschema()
 
 
-@auth_bp.route("/users", methods=['GET'])
-@auth_bp.route("/users/<int:user_id>", methods=['GET'])
+@auth_api_bp.route("/users", methods=['GET'])
+@auth_api_bp.route("/users/<int:user_id>", methods=['GET'])
 def get_users(user_id=None):
     if not user_id: # Return All users
         users = Users.query.all() # Fetching all users from the database
@@ -44,8 +44,8 @@ def get_users(user_id=None):
     return users, 200
 
 
-@auth_bp.route("/register", methods=['POST'])
-def register():
+@auth_api_bp.route("/register", methods=['POST'])
+def register_api():
     # Handling Registration 
     try:
         user = user_schema.load(request.json)  # Deserialization of incoming json data
@@ -73,14 +73,14 @@ def register():
 
     #return user_schema.dump(user), 201 # Created
     return api_response(
-        data={"user": user_schema.dump(user), "token": token},
+        data={"user": user_schema.dump(user)},
         message="Account created successfully",
         code=201
     )
 
 
-@auth_bp.route("/login", methods=['POST'])
-def login():
+@auth_api_bp.route("/login", methods=['POST'])
+def login_api():
     user_logins = request.json
     try:
         user_logins = user_schema.load(user_logins, partial=True)  # Deserialization user logins
@@ -107,7 +107,7 @@ def login():
     )
     
 
-@auth_bp.route("/logout", methods=['POST'])
+@auth_api_bp.route("/logout", methods=['POST'])
 def logout():
     # Logout Logic Token Invalidation, Session Clearing
     #return jsonify({"status": "success", "message": "Logged out successfully"}), 200 # OK
@@ -118,10 +118,10 @@ def logout():
 
 
 
-@auth_bp.route("users/<int:user_id>", methods=['PUT'])
+@auth_api_bp.route("users/<int:user_id>", methods=['PUT'])
 def update_user(user_id): # password reset, email update, username update
     pass
 
-@auth_bp.route("/users/<int:user_id>", methods=['DELETE'])
+@auth_api_bp.route("/users/<int:user_id>", methods=['DELETE'])
 def delete_user(user_id): # User Deletion
     pass
