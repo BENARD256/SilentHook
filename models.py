@@ -77,12 +77,11 @@ class Mysql_events(db.Model):
         return f"<mysql_event {self.id}>"
     
 
-class Notifications(db.Model):
+class Alert_history(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     token = db.Column(db.String(50), db.ForeignKey('triggers.token'), nullable=False)
-    sent_to_addr = db.Column(db.String(50), nullable=False)
-    sent_at = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.Enum('sent', 'failed'), default='sent')
+    recipient_addr = db.Column(db.String(50), nullable=False)
+    delivery_status = db.Column(db.Enum('sent', 'failed'), default='sent')
 
     def __repr__(self):
         return f"<notification {self.id}>"
