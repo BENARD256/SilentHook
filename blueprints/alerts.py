@@ -128,6 +128,7 @@ def fim_callback(token):
     try:
         watcher_event = watcher_schema.load(watcher_event, partial=True)
     except ValidationError as err:
+        print("error:", err.messages) # DEBUGGING LINE
         return {"errors": err.messages}, 400 # Bad Request
     except Exception as err:
         return {"error": str(err)}, 500 # Internal Server Error
@@ -139,7 +140,7 @@ def fim_callback(token):
     # Replacing Mask with Label
     watcher_event.access = ACCESS_MAP.get(watcher_event.access, watcher_event.access) # Replacing The Mask
 
-    # Deduplication of Events
+    # Deduplication of Events. prevents spam alerts for a single Event
     event_exists = Watcher_events.query.filter_by(
         user = watcher_event.user,
         path = watcher_event.path,
@@ -166,6 +167,16 @@ def fim_callback(token):
     db.session.add(watcher_event)
     db.session.commit()
     db.session.refresh(watcher_event)
+
+    
+    # DEBUG LINES
+    print("\n")
+    print("#"*50)
+    for key, value in watcher_schema.dump(watcher_event).items():
+        print(key, ":", value)
+    print("#"*50)
+
+    print("\n")
 
     return api_response(
         data=watcher_schema.dump(watcher_event),
