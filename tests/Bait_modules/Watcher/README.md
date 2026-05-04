@@ -1,5 +1,5 @@
 WATCHER MODULE
-
+	
 Deploy.ps1 : A powershell script that once executed it triggers the installation of the watcher.ps1
 
 Watcher.ps1: A Background powershell service that monitors a sensitive directory specified for changed made to it ie Copy,Delete, Addition or Updating
