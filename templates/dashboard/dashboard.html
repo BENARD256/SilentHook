@@ -3,9 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Dashboard — DBBD</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="/static/css/dashboard/dashboard.css">
 </head>
+
 <body>
-    <p>Deception Defence Dashboard</p>
+
+    <nav>
+        <a class="nav-brand" href="/dashboard">DB<span>BD</span></a>
+        <ul class="nav-links">
+            <li><a href="/dashboard" class="active">Dashboard</a></li>
+            <li><a href="/triggers">My Baits</a></li>
+            <li><a href="/alerts">Alerts</a></li>
+            <li><a href="/docs">Docs</a></li>
+        </ul>
+    </nav>
+
+    <div class="page-wrapper">
+
+        <div class="dashboard-hero">
+            <p class="hero-eyebrow">Deception-Based Breach Detection</p>
+            <h1 class="hero-title">Deploy a bait.<br><em>Catch an intruder.</em></h1>
+            <p class="hero-sub">Select a bait type below to generate a deception token and deploy it across your environment.</p>
+        </div>
+
+        <div class="toolbar">
+            <div class="filter-tabs" id="filter-tabs">
+                <button class="filter-tab active" data-filter="all">All</button>
+                <button class="filter-tab" data-filter="file">Files</button>
+                <button class="filter-tab" data-filter="folder">Folder</button>
+                <button class="filter-tab" data-filter="qrcode">QR</button>
+                <button class="filter-tab" data-filter="domain">Domain</button>
+            </div>
+            <div class="search-wrap">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input class="search-input" id="search-input" type="text" placeholder="Search baits…">
+            </div>
+        </div>
+
+        <div class="bait-grid" id="bait-grid">
+            <div class="state-container">
+                <div class="spinner"></div>
+                <span class="state-label">Fetching available baits</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Deploy Modal -->
+    <div class="modal-overlay" id="deploy-modal">
+        <div class="modal">
+
+            <!-- Image banner (top) -->
+            <div class="modal-image" id="modal-image-wrap">
+                <img id="modal-img" src="" alt="" onerror="this.style.display='none';document.getElementById('modal-img-fallback').style.display='flex'">
+                <div class="modal-image-fallback" id="modal-img-fallback" style="display:none;">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                </div>
+                <span class="modal-abbrev" id="modal-abbrev">—</span>
+            </div>
+
+            <!-- X close button (overlaid on image) -->
+            <button class="modal-close" id="modal-close" title="Close">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+
+            <!-- Body -->
+            <div class="modal-body">
+                <div class="modal-title" id="modal-title">—</div>
+                <div class="modal-desc" id="modal-desc">—</div>
+
+                <!-- Reminder -->
+                <label class="field-label" for="modal-reminder">Bait Description / Reminder</label>
+                <input class="field-input" id="modal-reminder" type="text"
+                       placeholder="e.g. Finance folder bait on DC01">
+
+                <!-- Callback email -->
+                <label class="field-label" for="modal-email">Alert Email <span style="color:var(--muted);font-size:0.65rem;text-transform:none;letter-spacing:0;">(optional)</span></label>
+                <input class="field-input" id="modal-email" type="email"
+                       placeholder="alerts@yourcompany.com">
+                <p class="field-hint">
+                    Leave blank to use your Account email. Alerts will be sent here when the bait is triggered.
+                </p>
+            </div>
+
+            <!-- Footer — full-width deploy button -->
+            <div class="modal-footer">
+                <button class="btn-deploy" id="btn-deploy">Deploy Bait</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ── Modal state ──
+        let activeBaitId = null;
+
+        const modal        = document.getElementById('deploy-modal');
+        const modalImg     = document.getElementById('modal-img');
+        const modalFallback= document.getElementById('modal-img-fallback');
+        const modalAbbrev  = document.getElementById('modal-abbrev');
+        const modalTitle   = document.getElementById('modal-title');
+        const modalDesc    = document.getElementById('modal-desc');
+        const modalEmail   = document.getElementById('modal-email');
+        const modalReminder= document.getElementById('modal-reminder');
+        const btnDeploy    = document.getElementById('btn-deploy');
+
+        function openModal(bait) {
+            activeBaitId = bait.id;
+
+            // Populate image
+            if (bait.image_path) {
+                modalImg.src = '/' + bait.image_path;
+                modalImg.alt = bait.name;
+                modalImg.style.display = '';
+                modalFallback.style.display = 'none';
+            } else {
+                modalImg.style.display = 'none';
+                modalFallback.style.display = 'flex';
+            }
+
+            modalAbbrev.textContent  = bait.abbrev;
+            modalTitle.textContent   = bait.name;
+            modalDesc.textContent    = bait.description;
+            modalEmail.value         = '';
+            modalReminder.value      = '';
+            btnDeploy.disabled       = false;
+            btnDeploy.textContent    = 'Deploy Bait';
+
+            modal.classList.add('open');
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+            activeBaitId = null;
+        }
+
+        document.getElementById('modal-close').addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+        // Deploy submit (/api/v1/triggers/create/bait_id API)
+        btnDeploy.addEventListener('click', async () => {
+            if (!activeBaitId) return;
+
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = '/auth/login'; return; }
+
+            const email    = modalEmail.value.trim();
+            const reminder = modalReminder.value.trim();
+
+            if (!reminder) {
+                modalReminder.focus();
+                modalReminder.style.borderColor = 'var(--danger)';
+                setTimeout(() => modalReminder.style.borderColor = '', 1500);
+                return;
+            }
+
+            btnDeploy.disabled     = true;
+            btnDeploy.textContent  = 'Deploying…';
+
+            const payload = { reminder };
+            if (email) payload.callback_email = email;
+
+            try {
+                const res = await fetch(`/api/v1/triggers/create/${activeBaitId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.status === 401) {
+                    window.location.href = '/auth/login';
+                    return;
+                }
+
+                const result = await res.json();
+
+                if (res.ok) {
+                    btnDeploy.textContent = 'Deployed!';
+                    btnDeploy.style.background = 'var(--green)';
+                    setTimeout(() => {
+                        closeModal();
+                        btnDeploy.style.background = '';
+                    }, 1200);
+                } else {
+                    alert('Deploy failed: ' + (result.message || res.statusText));
+                    btnDeploy.disabled    = false;
+                    btnDeploy.textContent = 'Deploy Bait';
+                }
+
+            } catch (err) {
+                console.error('Deploy error:', err);
+                alert('Network error during deploy.');
+                btnDeploy.disabled    = false;
+                btnDeploy.textContent = 'Deploy Bait';
+            }
+        });
+
+        // BaitsFallback icon if no image in image_path
+        const FALLBACK_ICON = `
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;color:var(--muted)">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+            </svg>`;
+
+        const arrowIcon = `
+            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+            </svg>`;
+
+        let allBaits     = [];
+        let activeFilter = 'all';
+        
+        // Bait Rendering Grid
+        function renderGrid(baits) {
+            const grid = document.getElementById('bait-grid');
+            grid.innerHTML = '';
+
+            if (baits.length === 0) {
+                grid.innerHTML = `<div class="state-container"><span class="state-label">No baits match your filter</span></div>`;
+                return;
+            }
+
+            baits.forEach((bait, i) => {
+                const imageContent = bait.image_path
+                    ? `<img src="/${bait.image_path}" alt="${bait.name}"
+                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                    : '';
+
+                const card = document.createElement('div'); // div not <a> — no page nav
+                card.className = 'bait-card';
+                card.style.animationDelay = `${i * 60}ms`;
+                card.innerHTML = `
+                    <div class="card-image">
+                        ${imageContent}
+                        <div class="card-image-fallback"
+                             style="display:${bait.image_path ? 'none' : 'flex'}; align-items:center; justify-content:center; width:100%; height:100%;">
+                            ${FALLBACK_ICON}
+                        </div>
+                        <span class="card-abbrev">${bait.abbrev}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-name">${bait.name}</div>
+                        <div class="card-desc">${bait.description}</div>
+                        <div class="card-footer">
+                            <span class="card-cta">Deploy Bait</span>
+                            ${arrowIcon}
+                        </div>
+                    </div>
+                `;
+
+                card.addEventListener('click', () => openModal(bait));
+                grid.appendChild(card);
+            });
+        }
+        // Filtering Baits
+        function applyFilters() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim(); //Fetching search value
+            let filtered = allBaits;
+            if (activeFilter !== 'all') filtered = filtered.filter(b => b.type === activeFilter);
+            if (query) filtered = filtered.filter(b =>
+                b.name.toLowerCase().includes(query) ||
+                b.description.toLowerCase().includes(query) ||
+                b.abbrev.toLowerCase().includes(query)
+            );
+            renderGrid(filtered);
+        }
+
+        document.getElementById('filter-tabs').addEventListener('click', (e) => {
+            const tab = e.target.closest('.filter-tab');
+            if (!tab) return;
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            activeFilter = tab.dataset.filter;
+            applyFilters();
+        });
+
+        document.getElementById('search-input').addEventListener('input', applyFilters);
+
+        async function loadBaits() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = '/auth/login'; return; }
+
+            try {
+                const res = await fetch('/api/v1/baits', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.status === 401) { window.location.href = '/auth/login'; return; }
+
+                const result = await res.json();
+                if (!res.ok || !result.data) {
+                    document.getElementById('bait-grid').innerHTML = `
+                        <div class="state-container">
+                            <span class="state-label">Failed to load baits — ${result.message || 'unknown error'}</span>
+                        </div>`;
+                    return;
+                }
+                allBaits = result.data;
+                renderGrid(allBaits);
+
+            } catch (err) {
+                console.error('Load error:', err);
+                document.getElementById('bait-grid').innerHTML = `
+                    <div class="state-container">
+                        <span class="state-label">Network error — check console</span>
+                    </div>`;
+            }
+        }
+
+        window.onload = loadBaits;
+    </script>
+
 </body>
 </html>
