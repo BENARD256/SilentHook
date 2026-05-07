@@ -1,59 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In DBBD</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="/static/css/auth/login.css">
 </head>
 
 <body>
-    <h3>User login</h3>
 
-    <form id="loginform">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" placeholder="Email">
-        
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="Password">
+    <div class="login-card">
 
-        <div id="error-msg" style="color:red;"></div> 
+        <!-- Brand -->
+        <div class="brand">
+            <a class="brand-logo" href="#">DB<span>BD</span></a>
+            <p class="brand-sub">Deception-Based Breach Detection</p>
+        </div>
 
-        <input type="submit" value="login">
+        <div class="divider"></div>
 
-    </form>
+        <p class="form-heading">Sign in to your account</p>
+
+        <!-- Error banner -->
+        <div class="error-msg" id="error-msg"></div>
+
+        <!-- Email -->
+        <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email">
+        </div>
+
+        <!-- Password -->
+        <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+
+        <!-- Submit -->
+        <button class="btn-login" id="btn-login">
+            <span class="btn-spinner"></span>
+            <span id="btn-label">Continue</span>
+        </button>
+
+        <!-- Register link -->
+        <div class="login-footer">
+            Don't have an account? <a href="/auth/register">Create one</a>
+        </div>
+
+    </div>
 
     <script>
-        document.getElementById('loginform').addEventListener('submit', async (e) => {
-            e.preventDefault()
+        const emailInput  = document.getElementById('email');
+        const passInput   = document.getElementById('password');
+        const btnLogin    = document.getElementById('btn-login');
+        const btnLabel    = document.getElementById('btn-label');
+        const errorMsg    = document.getElementById('error-msg');
 
-            const formData = {
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.classList.add('visible');
+            emailInput.classList.add('error');
+            passInput.classList.add('error');
+        }
+
+        function clearError() {
+            errorMsg.classList.remove('visible');
+            emailInput.classList.remove('error');
+            passInput.classList.remove('error');
+        }
+
+        function setLoading(state) {
+            btnLogin.disabled = state;
+            btnLogin.classList.toggle('loading', state);
+            btnLabel.textContent = state ? 'Signing in…' : 'Continue';
+        }
+
+        btnLogin.addEventListener('click', async () => {
+            clearError();
+
+            const email    = emailInput.value.trim();
+            const password = passInput.value;
+
+            if (!email || !password) {
+                showError('Please enter your email and password.');
+                return;
             }
 
-            const response = await fetch('/api/v1/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            })
+            setLoading(true);
 
-            const result = await response.json()
+            try {
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
 
-            if (response.ok) {
-                document.getElementById('error-msg').innerText = result.data.JWT
-                localStorage.setItem('token', result.data.JWT)
-                window.location.href = '/dashboard'
-            }
+                const result = await response.json();
 
-            else {
-                if (result.error){
-                    document.getElementById('error-msg').innerText = result.error
+                if (response.ok) {
+                    localStorage.setItem('token', result.data.JWT);
+                    window.location.href = '/dashboard';
+                } else {
+                    if (result.error) {
+                        showError(result.error);
+                    } else if (result.errors) {
+                        showError(Object.values(result.errors).flat().join(', '));
+                    } else if (result.message) {
+                        showError(result.message);
+                    } else {
+                        showError('Login failed. Please try again.');
+                    }
+                    setLoading(false);
                 }
-                else if (result.errors) {
-                    const messages = Object.values(result.errors).flat().join(', ')
-                    document.getElementById('error-msg').innerText = messages
-                }
+
+            } catch (err) {
+                console.error('Login error:', err);
+                showError('Network error. Check your connection and try again.');
+                setLoading(false);
             }
-        })
+        });
+
+        // Allow Enter key to submit
+        [emailInput, passInput].forEach(input => {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') btnLogin.click();
+            });
+        });
     </script>
-    
+
 </body>
 </html>

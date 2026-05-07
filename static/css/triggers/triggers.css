@@ -1,0 +1,288 @@
+/* DBBD Triggers Page Styles  */
+/* Reference: <link rel="stylesheet" href="/static/css/triggers.css"> */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+:root {
+    --bg:        #0d1117;
+    --surface:   #161b22;
+    --border:    #21262d;
+    --accent:    #f97316;
+    --accent-dim:#7c3003;
+    --text:      #e6edf3;
+    --muted:     #8b949e;
+    --hover:     #1c2128;
+    --danger:    #f85149;
+    --green:     #3fb950;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 48px 24px;
+}
+
+/* ── Page wrapper ── */
+.page-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* ── Header ── */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.page-header h1 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.page-header h1 span {
+    color: var(--accent);
+}
+
+.badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 2px 10px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.badge.visible { opacity: 1; }
+
+/* ── Table card ── */
+.table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead tr {
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+}
+
+th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 14px 20px;
+    text-align: left;
+}
+
+tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    animation: rowIn 0.3s ease both;
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--hover); }
+
+@keyframes rowIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+td {
+    padding: 14px 20px;
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+/* id column */
+td:first-child {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted);
+    font-size: 0.8rem;
+    width: 52px;
+}
+
+/* token column */
+.token-cell {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--accent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+}
+
+/* reminder column */
+.reminder-cell {
+    color: var(--text);
+    max-width: 220px;
+}
+
+/* date column */
+.date-cell {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+/* email */
+.email-cell {
+    color: var(--muted);
+    font-size: 0.82rem;
+}
+
+/* ── Empty / loading states ── */
+.state-row td {
+    padding: 48px 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.875rem;
+}
+
+.spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Delete button ── */
+.btn-delete {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.btn-delete:hover {
+    color: var(--danger);
+    border-color: var(--danger);
+    background: rgba(248, 81, 73, 0.08);
+}
+.btn-delete svg { pointer-events: none; }
+
+/* ── Confirmation modal ── */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(3px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 32px;
+    width: 100%;
+    max-width: 420px;
+    animation: modalIn 0.2s ease;
+}
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.modal-icon {
+    width: 44px; height: 44px;
+    background: rgba(248,81,73,0.1);
+    border: 1px solid var(--danger);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 18px;
+    color: var(--danger);
+}
+
+.modal h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.modal p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    line-height: 1.5;
+}
+
+.modal-token {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin-bottom: 24px;
+    word-break: break-all;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.btn-cancel {
+    background: transparent;
+    color: var(--muted);
+}
+.btn-cancel:hover { background: var(--hover); color: var(--text); }
+
+.btn-confirm-delete {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+}
+.btn-confirm-delete:hover { background: #c93d36; border-color: #c93d36; }
+.btn-confirm-delete:disabled { opacity: 0.5; cursor: not-allowed; }
