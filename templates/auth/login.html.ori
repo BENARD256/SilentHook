@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>login</title>
+</head>
+
+<body>
+    <h3>User login</h3>
+
+    <form id="loginform">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="Email">
+        
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Password">
+
+        <div id="error-msg" style="color:red;"></div> 
+
+        <input type="submit" value="login">
+
+    </form>
+
+    <script>
+        document.getElementById('loginform').addEventListener('submit', async (e) => {
+            e.preventDefault()
+
+            const formData = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            }
+
+            const response = await fetch('/api/v1/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+
+            const result = await response.json()
+
+            if (response.ok) {
+                document.getElementById('error-msg').innerText = result.data.JWT
+                localStorage.setItem('token', result.data.JWT)
+                window.location.href = '/dashboard'
+            }
+
+            else {
+                if (result.error){
+                    document.getElementById('error-msg').innerText = result.error
+                }
+                else if (result.errors) {
+                    const messages = Object.values(result.errors).flat().join(', ')
+                    document.getElementById('error-msg').innerText = messages
+                }
+            }
+        })
+    </script>
+    
+</body>
+</html>
