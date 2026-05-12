@@ -97,6 +97,7 @@ def login_api():
         return {"error": "Invalid email or password"}, 401 # Unauthorized
 
     # JWT Token Generation
+    print("TYPE OF JWT: ", user.id, type(user.id))
     jwt_token = create_access_token(identity=user.id)
 
     #return user_schema.dump(user), 200 # OK  

@@ -26,6 +26,7 @@ class Baitsschema(SQLAlchemyAutoSchema):
     type = auto_field(required=True)
     description = auto_field(required=True)
     bait_path = auto_field(required=True, load_only=True) # Not loaded in API responses
+    image_path = auto_field(required=True)
 
 
 
@@ -77,7 +78,7 @@ class Watcher_eventschema(SQLAlchemyAutoSchema):
     event_time = auto_field(required=True)
 
 
-class Mysql_eventschema(SQLAlchemyAutoSchema):
+class Mysql_eventschema(SQLAlchemyAutoSchema):  
     class Meta:
         model = Mysql_events
         load_instance = True

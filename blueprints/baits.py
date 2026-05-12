@@ -24,7 +24,7 @@ ADMIN ONLY
 
 
 # Blueprint for Baits Routes
-baits_bp = Blueprint('baits', __name__, url_prefix='/baits')
+baits_bp = Blueprint('baits', __name__, url_prefix='/api/v1/baits')
 
 
 #baits Schema Initialization
@@ -39,7 +39,7 @@ def get_baits(bait_id=None, abbrev=None):
         bait = Baits.query.get(bait_id)
         if not bait:
             return api_response(message="Bait not found", status="error", code=404)
-        
+        print("BaitPath: ", )    
         return api_response(data=bait_schema.dump(bait), message="Bait retrieved successfully", code=200)
     
     if abbrev:
