@@ -29,7 +29,7 @@ DELETE /triggers/<trigger_id>      delete a trigger
 """
 
 # Blueprint for Trigger Routes
-triggers_bp = Blueprint('triggers', __name__, url_prefix='/triggers')
+triggers_bp = Blueprint('triggers', __name__, url_prefix='/api/v1/triggers')
 
 # Trigger Schema Init
 trigger_schema = Triggerschema()
@@ -118,10 +118,12 @@ def create_trigger(bait_id=None):
 
 # Retrieving Triggers for a specific User
 @triggers_bp.route("/", methods=['GET'])
-@triggers_bp.route("/<int:id>", methods=['GET'])
+@triggers_bp.route("/<int:id>", methods=['GET']) # Watchout for this 
 @jwt_required()
 def get_triggers(id=None):
     user_id = get_jwt_identity() #
+    print("TYPE OF JWT TRIGGERS: ", user_id, type(user_id))
+
     if id:
         # Single Trigger Filtered by id(table ID)
         user_trigger = Triggers.query.filter_by(id=id, user_id=user_id).first()
@@ -141,6 +143,7 @@ def get_triggers(id=None):
     # Multiple Triggers as per the user id
     user_triggers = Triggers.query.filter_by(user_id=user_id).all() # Return all triggers that match the user id
     
+
     if not user_triggers:
         return api_response(
             message = "Triggers Not Found",
@@ -154,7 +157,32 @@ def get_triggers(id=None):
         code = 200
     )
 
-# understand what data we should return if baits are requested
+# Method Not Yet Reliable
 
-def delete_trigger(id): # user deleting a bait has to be the owner
-    pass
+# understand what data we should return if baits are requested
+@triggers_bp.route("/<int:id>", methods=["DELETE"])
+@jwt_required()
+def delete_trigger(id=None): # user deleting a bait has to be the owner
+    user_id = get_jwt_identity()
+
+    if not id:
+        return api_response(
+            message = "Trigger ID required !",
+            code    = 400
+        )
+    
+    trigger = Triggers.query.filter_by(id=id, user_id=user_id).first()
+
+    if not trigger:
+        return api_response(
+            message = "Trigger Not Found!",
+            code    = 404
+        )
+    
+    db.session.delete(trigger)
+    db.session.commit()
+    db.session.refresh()
+    return api_response(
+        message = "Trigger Deleted Successfully",
+        code    = 200
+    )

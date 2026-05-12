@@ -2,10 +2,11 @@ from config import Config, DevelopmentConfig, ProductionConfig
 from models import db # Database Module
 
 # blue prints
-from blueprints.auth import auth_bp # Auth Blueprint
+from blueprints.auth import auth_bp, auth_api_bp # Auth Blueprint for APIs & Page Routes
 from blueprints.baits import baits_bp # Baits Blueprint
 from blueprints.triggers import triggers_bp # Triggers Blueprint
 from blueprints.alerts import callback_bp # Alerts (callback) Blueprint
+from blueprints import views # HTML Page Rendering 
 
 from flask import Flask, request, render_template, jsonify
 from flask_jwt_extended import JWTManager
@@ -18,17 +19,6 @@ app.config.from_object(DevelopmentConfig) # DB Connection String
 db.init_app(app) #initializing Db
 
 jwt = JWTManager(app) # Initializing JWT Manager
-
-
-
-@app.route("/", methods=['GET'])
-def index():
-    return jsonify({"message":"Homepage"})
-
-
-
-
-
 
 
 
@@ -50,10 +40,15 @@ def index():
 
 
 def register_blueprints():
+    app.url_map.strict_slashes = False
     app.register_blueprint(auth_bp) # Registering Auth Blueprint
+    app.register_blueprint(auth_api_bp) # Registering Auth API blueprint
+
     app.register_blueprint(baits_bp) # Registering Baits Blueprint
     app.register_blueprint(triggers_bp) # Registering Triggers Blueprint
     app.register_blueprint(callback_bp) # Registering Alerts Blueprint
+
+    app.register_blueprint(views.views_bp) # Generale Blueprint for HTML Pages
 
 def test_db_connection(): # Function to test DB connection
     try:

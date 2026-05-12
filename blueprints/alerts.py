@@ -4,6 +4,7 @@ from utils import api_response
 
 from flask import Blueprint, request, jsonify
 from datetime import datetime
+from services.mailing import mailer # Sending Email Alert to Users
 
 """
 Bait Callbacks Via GET
@@ -31,7 +32,7 @@ def validate_token(token_id): # Before Triggering an Alert Verify if Token_id is
 @callback_bp.route("<string:token_id>/callback", methods=['GET']) # xlsx, docx, pdf, qrcode
 def msoffice_callback(token_id):
     trigger_token = validate_token(token_id)
-
+    print("EMAIL AND REMINDER VERIFICATION", trigger_token.reminder, trigger_token.callback_email)
     if not trigger_token:
         return api_response(message="Invalid token", status="error", code=404)
 
@@ -54,9 +55,19 @@ def msoffice_callback(token_id):
     # Refreshing Db Session
     db.session.refresh(alert) # Making Sure it Returns updated Results
 
+    # SENDING EMAIL ALERTS
+    bait_type = trigger_token.bait.abbrev if trigger_token.bait else "UNKNOWN"
+
+    alert_dictionary = alert_schema.dump(alert) # Dictionary of all details in the Alert
+    print(alert_dictionary)
+
+    print("Emailing")
+    mailer(dst_mail=trigger_token.callback_email, bait_type=bait_type, reminder=trigger_token.reminder, alert_dict=alert_dictionary)
+    print("Sent")
+
     return api_response(
         data=alert_schema.dump(alert),
-        message="Valid"
+        message="Valid" 
     )
 
 
@@ -167,6 +178,18 @@ def fim_callback(token):
     db.session.add(watcher_event)
     db.session.commit()
     db.session.refresh(watcher_event)
+
+    # SENDING EMAIL ALERTS
+
+    to_email = watcher_event.trigger_info.callback_email
+    bait_type = trigger_token.bait.abbrev if trigger_token.bait else "UNKNOWN"
+    reminder = watcher_event.trigger_info.reminder
+    alert_dictionary = watcher_schema.dump(watcher_event) # Dictionary of all details in the Alert
+    #print("ALERT DICTIONARY DUMPL ", alert_dictionary)
+    
+    print("sending..")
+    mailer(dst_mail=trigger_token.callback_email, bait_type=bait_type, reminder=trigger_token.reminder, alert_dict=alert_dictionary)
+    print("Sent")
 
     
     # DEBUG LINES

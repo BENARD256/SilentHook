@@ -21,6 +21,7 @@ class Baits(db.Model):
     type = db.Column(db.String(50), nullable=False)
     description = db.Column(db.String(255), nullable=False)
     bait_path = db.Column(db.String(255), nullable=False)
+    image_path = db.Column(db.String(255), nullable=False)
 
     def __repr__(self):
         return f"<bait {self.id}>"
@@ -34,6 +35,7 @@ class Triggers(db.Model):
     bait_id = db.Column(db.Integer, db.ForeignKey('baits.id')) # foregin key to baits table 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     # Relationships for backward access (Join)
+    bait = db.relationship('Baits', backref='triggers', lazy=True) # allows to fetch Bait Abbrev for emailing purposes (Which bait triggred alert)
     
     def __repr__(self):
         return f"<trigger {self.id}>"
@@ -59,7 +61,8 @@ class Watcher_events(db.Model):
     process = db.Column(db.String(255), nullable=False)
     source_ip = db.Column(db.String(50), nullable=False)
     event_time = db.Column(db.DateTime, default=datetime.utcnow)
-
+    trigger_info = db.relationship("Triggers", backref='Watcher_events', lazy=True)
+    
     def __repr__(self):
         return f"<watcher_event {self.id}>"
     
