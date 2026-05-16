@@ -15,8 +15,9 @@ class Config:
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 
     # Call_Back_Url
-    CALL_BACK_URL = "http://127.0.0.1/callback.png"
-
+    #CALLBACK_URL = os.environ.get('CALLBACK_URL', 'http://127.0.0.1:5000')
+    CALLBACK_URL = 'http://dbbd.com:5000' # DEFINE AN IP MAPPING IN /etc/hosts to resolve domain
+    
 
 class DevelopmentConfig(Config):
     DEBUG = True
