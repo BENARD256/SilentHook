@@ -1,4 +1,6 @@
-from flask import render_template, Blueprint
+from flask import render_template, Blueprint, send_from_directory
+
+from flask_jwt_extended import jwt_required # Require JWT to download bait
 
 from blueprints.auth import auth_bp
 from blueprints.triggers import triggers_bp
@@ -47,3 +49,10 @@ def alerts():
 @views_bp.route("/docs", methods=['GET', 'POST'])
 def about():
     return render_template('/about/about.html')
+
+
+# Downloads
+@views_bp.route('/downloads/<filename>')
+@jwt_required()  # only logged-in users can download bait
+def download_bait(filename):
+    return send_from_directory('static/downloads', filename, as_attachment=True)

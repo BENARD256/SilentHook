@@ -151,27 +151,32 @@
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
         // Deploy submit (/api/v1/triggers/create/bait_id API)
+
         btnDeploy.addEventListener('click', async () => {
             if (!activeBaitId) return;
 
-            const token = localStorage.getItem('token');
-            if (!token) { window.location.href = '/auth/login'; return; }
+            const token = localStorage.getItem('token'); // JWT TOKEN FROM LOCAL STORAGE
+
+            if (!token) { window.location.href = '/auth/login'; return; } // REDIRECT TO LOGIN INCASE TOKEN INVALID
 
             const email    = modalEmail.value.trim();
             const reminder = modalReminder.value.trim();
 
-            if (!reminder) {
+            if (!reminder) { // VERIFY REMINDER IS GIVEN
                 modalReminder.focus();
                 modalReminder.style.borderColor = 'var(--danger)';
                 setTimeout(() => modalReminder.style.borderColor = '', 1500);
                 return;
             }
 
-            btnDeploy.disabled     = true;
-            btnDeploy.textContent  = 'Deploying…';
+            btnDeploy.disabled    = true;
+            btnDeploy.textContent = 'Deploying…';
 
             const payload = { reminder };
+            
             if (email) payload.callback_email = email;
+
+            // Pushing data to API endpoint
 
             try {
                 const res = await fetch(`/api/v1/triggers/create/${activeBaitId}`, {
@@ -183,25 +188,53 @@
                     body: JSON.stringify(payload)
                 });
 
-                if (res.status === 401) {
-                    window.location.href = '/auth/login';
-                    return;
-                }
+                if (res.status === 401) { window.location.href = '/auth/login'; return; }
 
-                const result = await res.json();
+                const result = await res.json(); // API Resp
 
                 if (res.ok) {
                     btnDeploy.textContent = 'Deployed!';
                     btnDeploy.style.background = 'var(--green)';
+
+                    // Auto-download for file-based baits
+                    const filename = result.data?.filename;
+                    const abbrev   = modalAbbrev.textContent.trim();
+                    const NO_DOWNLOAD = ['DOMAIN']; // ALL BAITS WITHOUT DOWNLOADABLE FILE GO HERE
+
+                    if (filename && !NO_DOWNLOAD.includes(abbrev)) {
+                        try {
+                            const dlRes = await fetch(`/downloads/${filename}`, {
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+
+                            if (dlRes.ok) {
+                                const blob = await dlRes.blob();
+                                const url  = URL.createObjectURL(blob);
+                                const a    = document.createElement('a');
+                                a.href     = url;
+                                a.download = filename;
+                                document.body.appendChild(a);
+                                a.click();
+                                a.remove();
+                                URL.revokeObjectURL(url);
+                            } else {
+                                console.warn('Download failed:', dlRes.status);
+                            }
+                        } catch (dlErr) {
+                            console.error('Auto-download error:', dlErr);
+                        }
+                    }
+
                     setTimeout(() => {
                         closeModal();
                         btnDeploy.style.background = '';
                     }, 1200);
-                } else {
-                    alert('Deploy failed: ' + (result.message || res.statusText));
-                    btnDeploy.disabled    = false;
-                    btnDeploy.textContent = 'Deploy Bait';
-                }
+
+            } else {
+                alert('Deploy failed: ' + (result.message || res.statusText));
+                btnDeploy.disabled    = false;
+                btnDeploy.textContent = 'Deploy Bait';
+            }
 
             } catch (err) {
                 console.error('Deploy error:', err);
@@ -209,6 +242,7 @@
                 btnDeploy.disabled    = false;
                 btnDeploy.textContent = 'Deploy Bait';
             }
+        
         });
 
         // BaitsFallback icon if no image in image_path
