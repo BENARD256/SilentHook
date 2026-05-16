@@ -1,4 +1,4 @@
-from models import db, Triggers, Baits, Users
+from models import db, Triggers, Baits, Users, Alerts
 from schemas import Triggerschema, ValidationError
 from utils import api_response
 
@@ -7,7 +7,7 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 import uuid # For Generating Unique Token IDs
 
 import os
-from flask import current_app # accessing Callback UR
+from flask import current_app # accessing BASE CALLBACK_URL
 
 
 # IMPORTING BAIT GENERATION MODULES
@@ -50,12 +50,16 @@ def generate_token():
 # Function to Generate the Bait File. After Storing in the Db pull baits.bait_path
 def generate_bait_file(token=None, bait_abbrv=None, template_path=None): 
 
-    # Callback_url
-    callback_url = current_app.config['CALL_BACK_URL'] # Accessing from config.py
+    # Base Callback_url
+    callback_url = current_app.config['CALLBACK_URL'] # Accessing url from config.py
 
     print( "TOKEN:", token, "BAIT_ABBREV: ", bait_abbrv, "TEMPLATE_PATH: ", template_path, "URL: ", callback_url,)
 
+    # Constructing a Callback URL for all baits Via GET method
+    # pdf, xlsx, docx, pptx, qr, domain
+    callback_url_get = f"{callback_url}/token/{token}/callback" # Baseurl + "/token/ <TOKEN_ID> /callback"
 
+    print("FINAL URL FOR GET BAITS: ", callback_url_get)
     # Comming up with an msoffice Bait
 
     office_baits = {
@@ -70,7 +74,7 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None):
     }
 
     if bait_abbrv.lower() in office_baits:
-        return office_baits[bait_abbrv.lower()](CALLBACK_URL=callback_url, TEMPLATE=template_path, TOKEN=token) # Returns static/downloads/7035ae6f-7b19-4f94-a1c3-bb7f3ff51973.xlsx
+        return office_baits[bait_abbrv.lower()](CALLBACK_URL=callback_url_get, TEMPLATE=template_path, TOKEN=token) # Returns static/downloads/7035ae6f-7b19-4f94-a1c3-bb7f3ff51973.xlsx
 
 
 
@@ -137,7 +141,7 @@ def create_trigger(bait_id=None):
     # msoffice_bait(CALLBACK_URL, TEMPLATE, TOKEN)
 
 
-    # PULLING BAIT GENERATION DATA FROM bait_exists DB obj
+    # PULLING BAIT GENERATION DATA FROM bait_exists DB obj variable
 
     bait_abbrv = bait_exists.abbrev
     template_path  = bait_exists.bait_path
@@ -215,10 +219,13 @@ def delete_trigger(id=None): # user deleting a bait has to be the owner
             message = "Trigger Not Found!",
             code    = 404
         )
-    
+    # Delete child alerts first before deleting the trigger. (Foreign Key relationship)
+    Alerts.query.filter_by(token=trigger.token).delete()
+
     db.session.delete(trigger)
     db.session.commit()
-    db.session.refresh()
+    # db.session.refresh(trigger) # IT errors during bait deletion
+
     return api_response(
         message = "Trigger Deleted Successfully",
         code    = 200
