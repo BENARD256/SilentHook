@@ -32,9 +32,12 @@ def validate_token(token_id): # Before Triggering an Alert Verify if Token_id is
 @callback_bp.route("<string:token_id>/callback", methods=['GET']) # xlsx, docx, pdf, qrcode
 def msoffice_callback(token_id):
     trigger_token = validate_token(token_id)
-    print("EMAIL AND REMINDER VERIFICATION", trigger_token.reminder, trigger_token.callback_email)
+
     if not trigger_token:
         return api_response(message="Invalid token", status="error", code=404)
+    
+    print("EMAIL AND REMINDER VERIFICATION", trigger_token.reminder, trigger_token.callback_email)
+    
 
 
     # Bulding Alert
