@@ -9,6 +9,12 @@ import uuid # For Generating Unique Token IDs
 import os
 from flask import current_app # accessing Callback UR
 
+
+# IMPORTING BAIT GENERATION MODULES
+
+from services.msoffice import msoffice_bait # Generates office baits
+
+
 """
 User Provides
     - Callback Email. If not We fetch Users.email then use it as Callback
@@ -40,20 +46,32 @@ def generate_token():
 
 
 
+
 # Function to Generate the Bait File. After Storing in the Db pull baits.bait_path
-def generate_bait_file(bait_id=None): # bait_id --> bait.bait_path . It will be called after validating the paths in create trigger
+def generate_bait_file(token=None, bait_abbrv=None, template_path=None): 
 
     # Callback_url
     callback_url = current_app.config['CALL_BACK_URL'] # Accessing from config.py
 
-    bait_path = Baits.query.get(bait_id).bait_path # Bait path from baits table
+    print( "TOKEN:", token, "BAIT_ABBREV: ", bait_abbrv, "TEMPLATE_PATH: ", template_path, "URL: ", callback_url,)
 
-    if os.path.exists(bait_path):
-        pass
-    else:
-        pass
-    
-    print("Bait Id:", bait_id, "PATH: ", bait_path, "URL: ", callback_url)
+
+    # Comming up with an msoffice Bait
+
+    office_baits = {
+        'docx':       msoffice_bait,
+        'xlsx':       msoffice_bait,
+        'pptx':       msoffice_bait,
+        'pdf':        None,
+        'qr':         None,
+        'fim':        None,
+        'mysql_dump': None,
+        'domain':     None,
+    }
+
+    if bait_abbrv.lower() in office_baits:
+        return office_baits[bait_abbrv.lower()](CALLBACK_URL=callback_url, TEMPLATE=template_path, TOKEN=token) # Returns static/downloads/7035ae6f-7b19-4f94-a1c3-bb7f3ff51973.xlsx
+
 
 
 @triggers_bp.route("/create/<int:bait_id>", methods=['POST'])
@@ -107,10 +125,29 @@ def create_trigger(bait_id=None):
     db.session.commit()
     db.session.refresh(trigger_data) # Refreshing Null Fields 
     
-    generate_bait_file(bait_id=bait_id) # Bait Generation
+    
+    # Bait Generation
+
+    # bait_gen_data = Triggers.query.filter_by(token=trigger_data.token).first() # Filtering by the newly generated Token ID trigger_data.token
+
+    # bait_type = bait_gen_data.bait.abbrev if bait_gen_data.bait.abbrev else "UNKNOWN"
+
+    # print("Bait Type: ", bait_type)
+
+    # msoffice_bait(CALLBACK_URL, TEMPLATE, TOKEN)
+
+
+    # PULLING BAIT GENERATION DATA FROM bait_exists DB obj
+
+    bait_abbrv = bait_exists.abbrev
+    template_path  = bait_exists.bait_path
+    
+    filename = generate_bait_file(token=trigger_data.token, bait_abbrv=bait_abbrv, template_path=template_path) # Returns BAIT FILE
+
+    print("filename: is: ", filename)
 
     return api_response(
-        data={"trigger": trigger_schema.dump(trigger_data)},
+        data={"trigger": trigger_schema.dump(trigger_data), "filename":filename },
         message="Trigger created successfully",
         code=201
     )
