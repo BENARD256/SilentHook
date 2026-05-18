@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Register</title>
+</head>
+
+<body>
+    <h3>Register User</h3>
+
+    <form id="regform">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Username">
+
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="Email">
+        
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Password">
+
+        <div id="error-msg" style="color:red;"></div> 
+
+        <input type="submit" value="Register">
+
+    </form>
+
+    <script>
+        document.getElementById('regform').addEventListener('submit', async (e) => {
+            e.preventDefault()
+
+            const formData = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            }
+
+            const response = await fetch('/api/v1/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+
+            const result = await response.json()
+
+            if (response.ok) {
+                //localStorage.setItem('token', result.data.token)
+                window.location.href = '/auth/login'
+            }
+
+            else {
+                if (result.error){
+                    document.getElementById('error-msg').innerText = result.error
+                }
+                else if (result.errors) {
+                    const messages = Object.values(result.errors).flat().join(', ')
+                    document.getElementById('error-msg').innerText = messages
+                }
+            }
+        })
+    </script>
+    
+</body>
+</html>

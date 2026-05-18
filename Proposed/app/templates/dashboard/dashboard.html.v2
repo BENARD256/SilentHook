@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard DBBD</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="/static/css/dashboard/dashboard.css">
+</head>
+
+<body>
+
+    <nav>
+        <a class="nav-brand" href="/dashboard">DB<span>BD</span></a>
+        <ul class="nav-links">
+            <li><a href="/dashboard" class="active">Dashboard</a></li>
+            <li><a href="/triggers">My Baits</a></li>
+            <li><a href="/alerts">Alerts</a></li>
+            <li><a href="/docs">Docs</a></li>
+        </ul>
+    </nav>
+
+    <div class="page-wrapper">
+
+        <!-- Hero -->
+        <div class="dashboard-hero">
+            <p class="hero-eyebrow">Deception-Based Breach Detection</p>
+            <h1 class="hero-title">Deploy a bait.<br><em>Catch an intruder.</em></h1>
+            <p class="hero-sub">Select a bait type below to generate a deception token and deploy it across your environment.</p>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="filter-tabs" id="filter-tabs">
+                <button class="filter-tab active" data-filter="all">All</button>
+                <button class="filter-tab" data-filter="file">Files</button>
+                <button class="filter-tab" data-filter="folder">Folder</button>
+                <button class="filter-tab" data-filter="qrcode">QR</button>
+                <button class="filter-tab" data-filter="domain">Domain</button>
+            </div>
+            <div class="search-wrap">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input class="search-input" id="search-input" type="text" placeholder="Search baits…">
+            </div>
+        </div>
+
+        <!-- Bait grid -->
+        <div class="bait-grid" id="bait-grid">
+            <div class="state-container">
+                <div class="spinner"></div>
+                <span class="state-label">Fetching available baits</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Fallback SVG shown when image_path is missing
+        const FALLBACK_ICON = `
+            <svg class="card-image-fallback" width="40" height="40" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="1.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+            </svg>`;
+
+        const arrowIcon = `
+            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+            </svg>`;
+
+        // State
+        let allBaits     = [];
+        let activeFilter = 'all';
+
+        // Render grid
+        function renderGrid(baits) {
+            const grid = document.getElementById('bait-grid');
+            grid.innerHTML = '';
+
+            if (baits.length === 0) {
+                grid.innerHTML = `
+                    <div class="state-container">
+                        <span class="state-label">No baits match your filter</span>
+                    </div>`;
+                return;
+            }
+
+            baits.forEach((bait, i) => {
+                const imageContent = bait.image_path
+                    ? `<img src="/${bait.image_path}" alt="${bait.name}"
+                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                    : '';
+
+                const card = document.createElement('a');
+                card.className = 'bait-card';
+                card.href = `/generate?bait_id=${bait.id}`;
+                card.style.animationDelay = `${i * 60}ms`;
+                card.innerHTML = `
+                    <div class="card-image">
+                        ${imageContent}
+                        <div class="card-image-fallback"
+                             style="display:${bait.image_path ? 'none' : 'flex'}; align-items:center; justify-content:center; width:100%; height:100%;">
+                            ${FALLBACK_ICON}
+                        </div>
+                        <span class="card-abbrev">${bait.abbrev}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-name">${bait.name}</div>
+                        <div class="card-desc">${bait.description}</div>
+                        <div class="card-footer">
+                            <span class="card-cta">Deploy Bait</span>
+                            ${arrowIcon}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Filter + search
+        function applyFilters() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            let filtered = allBaits;
+
+            if (activeFilter !== 'all') {
+                filtered = filtered.filter(b => b.type === activeFilter);
+            }
+
+            if (query) {
+                filtered = filtered.filter(b =>
+                    b.name.toLowerCase().includes(query) ||
+                    b.description.toLowerCase().includes(query) ||
+                    b.abbrev.toLowerCase().includes(query)
+                );
+            }
+
+            renderGrid(filtered);
+        }
+
+        // Filter tabs
+        document.getElementById('filter-tabs').addEventListener('click', (e) => {
+            const tab = e.target.closest('.filter-tab');
+            if (!tab) return;
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            activeFilter = tab.dataset.filter;
+            applyFilters();
+        });
+
+        //Search
+        document.getElementById('search-input').addEventListener('input', applyFilters);
+
+        // Fetch baits
+        async function loadBaits() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = '/auth/login'; return; }
+
+            try {
+                const res = await fetch('/api/v1/baits', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.status === 401) {
+                    window.location.href = '/auth/login';
+                    return;
+                }
+
+                const result = await res.json();
+
+                if (!res.ok || !result.data) {
+                    document.getElementById('bait-grid').innerHTML = `
+                        <div class="state-container">
+                            <span class="state-label">Failed to load baits — ${result.message || 'unknown error'}</span>
+                        </div>`;
+                    return;
+                }
+
+                allBaits = result.data;
+                renderGrid(allBaits);
+
+            } catch (err) {
+                console.error('Load error:', err);
+                document.getElementById('bait-grid').innerHTML = `
+                    <div class="state-container">
+                        <span class="state-label">Network error — check console</span>
+                    </div>`;
+            }
+        }
+
+        window.onload = loadBaits;
+    </script>
+
+</body>
+</html>

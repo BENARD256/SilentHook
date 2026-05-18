@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account — DBBD</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="/static/css/auth/register.css">
+</head>
+
+<body>
+
+    <div class="register-card">
+
+        <!-- Brand -->
+        <div class="brand">
+            <a class="brand-logo" href="#">DB<span>BD</span></a>
+            <p class="brand-sub">Deception-Based Breach Detection</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <p class="form-heading">Create your account</p>
+
+        <!-- Error banner -->
+        <div class="error-msg" id="error-msg"></div>
+
+        <!-- Username -->
+        <div class="field">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username"
+                   placeholder="your_username" autocomplete="username">
+        </div>
+
+        <!-- Email -->
+        <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email"
+                   placeholder="you@example.com" autocomplete="email">
+        </div>
+
+        <!-- Password -->
+        <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password"
+                   placeholder="••••••••" autocomplete="new-password">
+            <!-- Strength indicator -->
+            <div class="strength-wrap" id="strength-wrap">
+                <div class="strength-bar-track">
+                    <div class="strength-bar-fill" id="strength-bar"></div>
+                </div>
+                <span class="strength-label" id="strength-label">—</span>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <button class="btn-register" id="btn-register">
+            <span class="btn-spinner"></span>
+            <span id="btn-label">Create Account</span>
+        </button>
+
+        <!-- Login link -->
+        <div class="register-footer">
+            Already have an account? <a href="/auth/login">Sign in</a>
+        </div>
+
+    </div>
+
+    <script>
+        const usernameInput = document.getElementById('username');
+        const emailInput    = document.getElementById('email');
+        const passInput     = document.getElementById('password');
+        const btnRegister   = document.getElementById('btn-register');
+        const btnLabel      = document.getElementById('btn-label');
+        const errorMsg      = document.getElementById('error-msg');
+        const strengthWrap  = document.getElementById('strength-wrap');
+        const strengthBar   = document.getElementById('strength-bar');
+        const strengthLabel = document.getElementById('strength-label');
+
+        // ── Password strength ──
+        passInput.addEventListener('input', () => {
+            const val = passInput.value;
+            if (!val) { strengthWrap.classList.remove('visible'); return; }
+
+            strengthWrap.classList.add('visible');
+
+            let score = 0;
+            if (val.length >= 8)             score++;
+            if (/[A-Z]/.test(val))           score++;
+            if (/[0-9]/.test(val))           score++;
+            if (/[^A-Za-z0-9]/.test(val))    score++;
+
+            const levels = [
+                { label: 'Weak',      color: '#f85149', width: '25%' },
+                { label: 'Fair',      color: '#e3b341', width: '50%' },
+                { label: 'Good',      color: '#58a6ff', width: '75%' },
+                { label: 'Strong',    color: '#3fb950', width: '100%' },
+            ];
+            const level = levels[Math.max(0, score - 1)];
+            strengthBar.style.width      = level.width;
+            strengthBar.style.background = level.color;
+            strengthLabel.textContent    = level.label;
+            strengthLabel.style.color    = level.color;
+        });
+
+        // ── Error helpers ──
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.classList.add('visible');
+        }
+        function clearError() {
+            errorMsg.classList.remove('visible');
+            [usernameInput, emailInput, passInput].forEach(i => i.classList.remove('error'));
+        }
+        function setLoading(state) {
+            btnRegister.disabled = state;
+            btnRegister.classList.toggle('loading', state);
+            btnLabel.textContent = state ? 'Creating account…' : 'Create Account';
+        }
+
+        // ── Submit ──
+        btnRegister.addEventListener('click', async () => {
+            clearError();
+
+            const username = usernameInput.value.trim();
+            const email    = emailInput.value.trim();
+            const password = passInput.value;
+
+            // Basic client-side validation
+            if (!username) {
+                showError('Username is required.');
+                usernameInput.classList.add('error');
+                usernameInput.focus();
+                return;
+            }
+            if (!email) {
+                showError('Email address is required.');
+                emailInput.classList.add('error');
+                emailInput.focus();
+                return;
+            }
+            if (!password) {
+                showError('Password is required.');
+                passInput.classList.add('error');
+                passInput.focus();
+                return;
+            }
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters.');
+                passInput.classList.add('error');
+                passInput.focus();
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                const response = await fetch('/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    window.location.href = '/auth/login';
+                } else {
+                    if (result.error) {
+                        showError(result.error);
+                    } else if (result.errors) {
+                        showError(Object.values(result.errors).flat().join(', '));
+                    } else if (result.message) {
+                        showError(result.message);
+                    } else {
+                        showError('Registration failed. Please try again.');
+                    }
+                    setLoading(false);
+                }
+
+            } catch (err) {
+                console.error('Register error:', err);
+                showError('Network error. Check your connection and try again.');
+                setLoading(false);
+            }
+        });
+
+        // Enter key submits
+        [usernameInput, emailInput, passInput].forEach(input => {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') btnRegister.click();
+            });
+        });
+    </script>
+
+</body>
+</html>

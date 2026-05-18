@@ -1,0 +1,45 @@
+version: '3.9'
+
+services:
+  flask:
+    build: .
+    restart: always
+    env_file: .env
+    depends_on:
+      - redis
+      - postgres
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    env_file: .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./app/static:/static:ro
+    depends_on:
+      - flask
+
+volumes:
+  redis_data:
+  postgres_data:

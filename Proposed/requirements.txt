@@ -1,0 +1,55 @@
+## how to this file: 
+# This file lists all the dependencies required for the DBBD project.
+# To install these dependencies, run:
+# pip install -r requirements.txt
+
+
+
+# Core Web Framework & Extensions
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-JWT-Extended==4.5.2
+
+# Caching & Session Management
+Flask-Caching==2.1.0
+redis==5.0.1
+
+# Database Drivers & Connections
+mysql-connector-python==8.1.0
+pymysql==1.1.0
+
+# Security & Password Hashing
+Werkzeug==2.3.7
+cryptography==42.0.5
+
+# Advanced Logging & Auditing
+loguru==0.7.2
+
+# Serialization & Validation
+marshmallow==3.20.1
+marshmallow-sqlalchemy==0.29.0
+
+# Testing & Code Coverage
+pytest==7.3.1
+pytest-flask==1.2.0
+pytest-cov==4.0.0
+coverage==7.2.7
+
+# Deployment & Production
+gunicorn==20.1.0
+
+
+
+
+#Flask==2.3.3
+#Flask-SQLAlchemy==3.0.5
+#Flask-JWT-Extended==4.5.2
+#mysql-connector-python==8.1.0
+#marshmallow==3.20.1
+#marshmallow-sqlalchemy==0.29.0
+#pytest==7.3.1
+#pytest-flask==1.2.0
+#pytest-cov==4.0.0
+#coverage==7.2.7
+
+
