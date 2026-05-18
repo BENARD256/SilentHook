@@ -12,10 +12,11 @@
 from app.extensions import db, jwt, cache # Importing Extensions for DB, JWT, and Caching
 from app.config import Config, DevelopmentConfig, ProductionConfig # Importing Configurations
 from app.models import Users # Importing User Model
-from app.schemas import Userschema, ValidationError # Importing User Schema and Validation Error
-from app.utils.helpers import api_response # Importing Helper Function for Standardized API Responses
+from app.schemas import Userschema # Importing User Schema for Validation and Serialization
+from app.utils.helpers import api_response,format_validation_errors,test_db_connection # Importing helper functions for standardized API responses and DB connection testing
+
 from marshmallow import ValidationError # Importing ValidationError for handling schema validation errors
-from flask import Blueprint, request, jsonify # Importing Flask modules for Blueprint, Request handling, and JSON responses
+from flask import Blueprint, render_template, request, jsonify # Importing Flask modules for Blueprint, Request handling, and JSON responses
 from flask_jwt_extended import create_access_token # Importing function to create JWT tokens
 from werkzeug.security import generate_password_hash, check_password_hash # For Password Hashing & Validation
 
@@ -138,3 +139,11 @@ def update_user(user_id): # password reset, email update, username update
 @auth_api_bp.route("/users/<int:user_id>", methods=['DELETE'])
 def delete_user(user_id): # User Deletion
     pass
+
+@views_bp.route("/dashboard", methods=['GET'])
+def dashboard():
+    return render_template('/dashboard/dashboard.html')
+
+@views_bp.route("/", methods=['GET'])
+def home():
+    return render_template('/auth/login.html')
