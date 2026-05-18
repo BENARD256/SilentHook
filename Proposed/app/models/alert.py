@@ -1,3 +1,7 @@
+# ALERT CALLBACKS
+# All bait callbacks (FIM, Office files, domain) are handled here.
+# Always validate the token before accessing any of its attributes. 
+
 from app.extensions import db
 from datetime import datetime
 

@@ -5,10 +5,11 @@
 
 from app.extensions import db # Importing the database instance from extensions
 from app.models import Baits # Importing the Baits model
-from app.schemas import Baitsschema, ValidationError # Importing the Baits schema and
+from app.schemas import Baitsschema # Importing the Baits schema and
 from app.utils.helpers import api_response # Importing the helper function for standardized API responses
 from flask import Blueprint, jsonify # Importing Flask modules for Blueprint and JSON responses
 from marshmallow import ValidationError # Importing ValidationError for handling schema validation errors
+from app.utils.helpers import api_response, format_validation_errors # Importing helper function to format validation errors for better readability   
 
 
 # Get all baits

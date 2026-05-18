@@ -9,7 +9,7 @@ from datetime import datetime
 ## updated imports
 from app.extensions import db # Importing the database instance from extensions
 from app.models import Alerts, Triggers, Watcher_events # Importing the Alerts, Triggers, Watcher_events models
-from app.schemas import Alertschema,Watcher_eventschema, ValidationError
+from app.schemas import Alertschema,Watcher_eventschema
 from app.utils.helpers import api_response # Importing the helper function for standardized API responses
 from marshmallow import ValidationError # Importing ValidationError for handling schema validation errors
 from app.services.mailing import mailer # Importing the mailer function for sending email alerts

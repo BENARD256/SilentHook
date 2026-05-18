@@ -1,3 +1,8 @@
+# TRIGGERS
+# JWT required on all routes. user_id is always pulled from the token.
+# Never trust user_id from request body.
+
+
 from app.extensions import db
 from datetime import datetime
 

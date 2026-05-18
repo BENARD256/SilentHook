@@ -8,35 +8,32 @@ from blueprints.triggers import triggers_bp # Triggers Blueprint
 from blueprints.alerts import callback_bp # Alerts (callback) Blueprint
 from blueprints import views # HTML Page Rendering 
 
-from flask import Flask, request, render_template, jsonify
+from flask import Flask , request, render_template, jsonify
 from flask_jwt_extended import JWTManager
 
+### caching 
+from flask_caching import Cache
+
+## Redis Cache Configuration
+config = {
+    'CACHE_TYPE': 'redis',  
+    'CACHE_REDIS_HOST': 'redis',  # Redis container name or IP address
+    'CACHE_REDIS_PORT': 6379,      # Redis default port     
+    'CACHE_REDIS_DB': 0,            # Redis database index
+    "CACHE_DEFAULT_TIMEOUT": 300     # Cache timeout in seconds Eequating to 5 minutes
+}
 
 app = Flask(__name__)
+app.config.from_mapping(config) # Load Cache Configuration
+
+## Initialize Cache extension
+cache = Cache(app)
 
 app.config.from_object(DevelopmentConfig) # DB Connection String
 
 db.init_app(app) #initializing Db
 
 jwt = JWTManager(app) # Initializing JWT Manager
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 def register_blueprints():

@@ -18,6 +18,7 @@
             <li><a href="/alerts">Alerts</a></li>
             <li><a href="/docs">Docs</a></li>
         </ul>
+        <button class="nav-logout">Sign out</button>
     </nav>
 
     <div class="page-wrapper">
@@ -297,37 +298,47 @@
         document.getElementById('search-input').addEventListener('input', applyFilters);
 
         async function loadBaits() {
-            const token = localStorage.getItem('token');
-            if (!token) { window.location.href = '/auth/login'; return; }
+    const token = localStorage.getItem('token');
+    if (!token) { window.location.href = '/auth/login'; return; }
 
-            try {
-                const res = await fetch('/api/v1/baits', {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.status === 401) { window.location.href = '/auth/login'; return; }
+    try {
+        const res = await fetch('/api/v1/baits', {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-                const result = await res.json();
-                if (!res.ok || !result.data) {
-                    document.getElementById('bait-grid').innerHTML = `
-                        <div class="state-container">
-                            <span class="state-label">Failed to load baits — ${result.message || 'unknown error'}</span>
-                        </div>`;
-                    return;
-                }
-                allBaits = result.data;
-                renderGrid(allBaits);
-
-            } catch (err) {
-                console.error('Load error:', err);
-                document.getElementById('bait-grid').innerHTML = `
-                    <div class="state-container">
-                        <span class="state-label">Network error — check console</span>
-                    </div>`;
-            }
+        if (res.status === 401) {
+            localStorage.removeItem('token');  // ← clear stale token
+            window.location.href = '/auth/login?reason=expired';
+            return;
         }
 
+        const result = await res.json();
+        if (!res.ok || !result.data) {
+            document.getElementById('bait-grid').innerHTML = `
+                <div class="state-container">
+                    <span class="state-label">Failed to load baits — ${result.message || 'unknown error'}</span>
+                </div>`;
+            return;
+        }
+        allBaits = result.data;
+        renderGrid(allBaits);
+
+    } catch (err) {
+        console.error('Load error:', err);
+        document.getElementById('bait-grid').innerHTML = `
+            <div class="state-container">
+                <span class="state-label">Network error — check console</span>
+            </div>`;
+    }
+}
         window.onload = loadBaits;
+
+
+        document.querySelector('.nav-logout')?.addEventListener('click', () => {
+    localStorage.removeItem('token');
+    window.location.href = '/auth/login';
+});
     </script>
 
 </body>

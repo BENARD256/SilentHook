@@ -9,6 +9,8 @@
 #from werkzeug.security import generate_password_hash, check_password_hash # For Password Hashing & Validation
 
 ## Updated imports for better modularity and separation of concerns
+from datetime import timedelta
+
 from app.extensions import db, jwt, cache # Importing Extensions for DB, JWT, and Caching
 from app.config import Config, DevelopmentConfig, ProductionConfig # Importing Configurations
 from app.models import Users # Importing User Model
@@ -16,8 +18,8 @@ from app.schemas import Userschema # Importing User Schema for Validation and Se
 from app.utils.helpers import api_response,format_validation_errors,test_db_connection # Importing helper functions for standardized API responses and DB connection testing
 
 from marshmallow import ValidationError # Importing ValidationError for handling schema validation errors
-from flask import Blueprint, render_template, request, jsonify # Importing Flask modules for Blueprint, Request handling, and JSON responses
-from flask_jwt_extended import create_access_token # Importing function to create JWT tokens
+from flask import Blueprint, redirect, render_template, request, jsonify, url_for # Importing Flask modules for Blueprint, Request handling, and JSON responses
+from flask_jwt_extended import create_access_token, jwt_required,set_access_cookies,unset_jwt_cookies # Importing function to create JWT tokens
 from werkzeug.security import generate_password_hash, check_password_hash # For Password Hashing & Validation
 
 
@@ -111,7 +113,13 @@ def login_api():
 
     # JWT Token Generation
     #print("TYPE OF JWT: ", user.id, type(user.id))
-    jwt_token = create_access_token(identity=user.id)
+    # jwt_token = create_access_token(identity=user.id)
+
+    token = create_access_token(
+        identity=user.id,
+        expires_delta= timedelta(hours=2)
+    )   
+    jwt_token = token
 
     #return user_schema.dump(user), 200 # OK  
     return api_response(
@@ -119,6 +127,7 @@ def login_api():
         message="Logged in successfully",
         code=200
     )
+    
     
 
 @auth_api_bp.route("/logout", methods=['POST'])
@@ -140,10 +149,3 @@ def update_user(user_id): # password reset, email update, username update
 def delete_user(user_id): # User Deletion
     pass
 
-@views_bp.route("/dashboard", methods=['GET'])
-def dashboard():
-    return render_template('/dashboard/dashboard.html')
-
-@views_bp.route("/", methods=['GET'])
-def home():
-    return render_template('/auth/login.html')

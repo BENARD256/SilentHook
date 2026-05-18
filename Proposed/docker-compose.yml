@@ -22,13 +22,20 @@ services:
       - redis_data:/data
     command: redis-server --appendonly yes
 
-  postgres:
-    image: postgres:16-alpine
-    restart: always
-    env_file: .env
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+  #postgres:
+   # image: postgres:16-alpine
+    #restart: always
+    #env_file: .env
+    #volumes:
+     # - postgres_data:/var/lib/postgresql/data
 
+  #mysql:
+    # image: mysql:8.0
+    # restart: always
+    # env_file: .env
+    # volumes:
+    #   - mysql_data:/var/lib/mysql
+    
   nginx:
     image: nginx:alpine
     restart: always
@@ -42,4 +49,5 @@ services:
 
 volumes:
   redis_data:
-  postgres_data:
+  #postgres_data:
+  #mysql_data:

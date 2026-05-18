@@ -1,9 +1,22 @@
-from .auth import auth_bp, auth_api_bp # Auth Blueprint for APIs & Page Routes
-from .baits import baits_bp # Baits Blueprint
-from .triggers import triggers_bp # Triggers Blueprint
-from .alerts import callback_bp # Alerts (callback) Blueprint
-from .import views # HTML Page Rendering
-from .extensions import db, jwt, cache # Importing Extensions for DB, JWT, and Caching
-from .config import Config, DevelopmentConfig, ProductionConfig # Importing Configurations
-from flask import Flask, request, render_template, jsonify
+from .auth import auth_bp, auth_api_bp
+from .baits import baits_bp
+from .triggers import triggers_bp
+from .alerts import callback_bp
+from .views import views_bp, auth_page_bp
 
+ALL_BLUEPRINTS = [
+    auth_bp,
+    auth_api_bp,
+    baits_bp,
+    triggers_bp,
+    callback_bp,
+    views_bp,
+    auth_page_bp,
+]
+
+__all__ = [
+    "auth_bp", "auth_api_bp",
+    "baits_bp", "triggers_bp",
+    "callback_bp", "views_bp",
+    "auth_page_bp", "ALL_BLUEPRINTS"
+]

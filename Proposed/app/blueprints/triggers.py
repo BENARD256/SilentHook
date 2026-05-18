@@ -11,7 +11,7 @@ from flask import current_app # accessing Callback UR
 ## updated imports
 from app.extensions import db # Importing the database instance from extensions
 from app.models import Triggers, Baits, Users # Importing the Triggers, B
-from app.schemas import Triggerschema, ValidationError # Importing the Triggers schema and Validation Error
+from app.schemas import Triggerschema # Importing the Triggers schema
 from app.utils.helpers import api_response # Importing the helper function for standardized API responses
 
 
