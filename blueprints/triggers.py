@@ -13,7 +13,7 @@ from flask import current_app # accessing BASE CALLBACK_URL
 # IMPORTING BAIT GENERATION MODULES
 
 from services.msoffice import msoffice_bait # Generates office baits
-
+from services.qrcode import qr_bait         # GenerateS Qr Code bait
 
 """
 User Provides
@@ -67,16 +67,19 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None):
         'xlsx':       msoffice_bait,
         'pptx':       msoffice_bait,
         'pdf':        None,
-        'qr':         None,
         'fim':        None,
         'mysql_dump': None,
         'domain':     None,
     }
-
+    # MS OFFICE
     if bait_abbrv.lower() in office_baits:
         return office_baits[bait_abbrv.lower()](CALLBACK_URL=callback_url_get, TEMPLATE=template_path, TOKEN=token) # Returns static/downloads/7035ae6f-7b19-4f94-a1c3-bb7f3ff51973.xlsx
 
 
+    # QR CODE
+    if bait_abbrv.lower() == 'qr':
+        return qr_bait(data=callback_url_get, logo_path=template_path, token=token)  # Returns /static/download/<token>.png (ONLY FILENAME)
+    
 
 @triggers_bp.route("/create/<int:bait_id>", methods=['POST'])
 @jwt_required()
