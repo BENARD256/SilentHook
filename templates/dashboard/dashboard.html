@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — DBBD</title>
+    <title>Dashboard - DBBD</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/static/css/dashboard/dashboard.css">
 </head>
@@ -76,17 +76,13 @@
                 </svg>
             </button>
 
-            <!-- Body -->
-            <div class="modal-body">
+            <!-- Body  never grab refs to children outside openModal, always re-query after reset -->
+            <div class="modal-body" id="modal-body">
                 <div class="modal-title" id="modal-title">—</div>
                 <div class="modal-desc" id="modal-desc">—</div>
-
-                <!-- Reminder -->
                 <label class="field-label" for="modal-reminder">Bait Description / Reminder</label>
                 <input class="field-input" id="modal-reminder" type="text"
                        placeholder="e.g. Finance folder bait on DC01">
-
-                <!-- Callback email -->
                 <label class="field-label" for="modal-email">Alert Email <span style="color:var(--muted);font-size:0.65rem;text-transform:none;letter-spacing:0;">(optional)</span></label>
                 <input class="field-input" id="modal-email" type="email"
                        placeholder="alerts@yourcompany.com">
@@ -95,7 +91,7 @@
                 </p>
             </div>
 
-            <!-- Footer — full-width deploy button -->
+            <!-- Footer full-width deploy button -->
             <div class="modal-footer">
                 <button class="btn-deploy" id="btn-deploy">Deploy Bait</button>
             </div>
@@ -104,20 +100,39 @@
     </div>
 
     <script>
-        // ── Modal state ──
+        // Stable refs (elements that never get replaced by innerHTML reset)
         let activeBaitId = null;
 
-        const modal        = document.getElementById('deploy-modal');
-        const modalImg     = document.getElementById('modal-img');
-        const modalFallback= document.getElementById('modal-img-fallback');
-        const modalAbbrev  = document.getElementById('modal-abbrev');
-        const modalTitle   = document.getElementById('modal-title');
-        const modalDesc    = document.getElementById('modal-desc');
-        const modalEmail   = document.getElementById('modal-email');
-        const modalReminder= document.getElementById('modal-reminder');
-        const btnDeploy    = document.getElementById('btn-deploy');
+        const modal         = document.getElementById('deploy-modal');
+        const modalImg      = document.getElementById('modal-img');
+        const modalFallback = document.getElementById('modal-img-fallback');
+        const modalAbbrev   = document.getElementById('modal-abbrev');
+        const modalBody     = document.getElementById('modal-body');
+        const btnDeploy     = document.getElementById('btn-deploy');
+
+        // Helper: always query from DOM (never cache these. they get replaced on DOMAIN reset)
+        const getReminder = () => document.getElementById('modal-reminder');
+        const getEmail    = () => document.getElementById('modal-email');
+        const getTitle    = () => document.getElementById('modal-title');
+        const getDesc     = () => document.getElementById('modal-desc');
+
+        // ── Reset modal body to default form state ──
+        function resetModalBody() {
+            modalBody.innerHTML = `
+                <div class="modal-title" id="modal-title">—</div>
+                <div class="modal-desc" id="modal-desc">—</div>
+                <label class="field-label" for="modal-reminder">Bait Description / Reminder</label>
+                <input class="field-input" id="modal-reminder" type="text" placeholder="e.g. Finance folder bait on DC01">
+                <label class="field-label" for="modal-email">Alert Email <span style="color:var(--muted);font-size:0.65rem;text-transform:none;letter-spacing:0;">(optional)</span></label>
+                <input class="field-input" id="modal-email" type="email" placeholder="alerts@yourcompany.com">
+                <p class="field-hint">Leave blank to use your Account email. Alerts will be sent here when the bait is triggered.</p>
+            `;
+        }
 
         function openModal(bait) {
+            // Always reset body first so form fields exist in DOM
+            resetModalBody();
+
             activeBaitId = bait.id;
 
             // Populate image
@@ -131,13 +146,15 @@
                 modalFallback.style.display = 'flex';
             }
 
-            modalAbbrev.textContent  = bait.abbrev;
-            modalTitle.textContent   = bait.name;
-            modalDesc.textContent    = bait.description;
-            modalEmail.value         = '';
-            modalReminder.value      = '';
-            btnDeploy.disabled       = false;
-            btnDeploy.textContent    = 'Deploy Bait';
+            modalAbbrev.textContent    = bait.abbrev;
+            getTitle().textContent     = bait.name;
+            getDesc().textContent      = bait.description;
+            getEmail().value           = '';
+            getReminder().value        = '';
+            btnDeploy.disabled         = false;
+            btnDeploy.textContent      = 'Deploy Bait';
+            btnDeploy.style.background = '';
+            btnDeploy.onclick          = null; // clear any DOMAIN close handler
 
             modal.classList.add('open');
         }
@@ -150,22 +167,29 @@
         document.getElementById('modal-close').addEventListener('click', closeModal);
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-        // Deploy submit (/api/v1/triggers/create/bait_id API)
-
+        // Deploy button
         btnDeploy.addEventListener('click', async () => {
             if (!activeBaitId) return;
 
-            const token = localStorage.getItem('token'); // JWT TOKEN FROM LOCAL STORAGE
+            // If DOMAIN close handler is active (onclick set), let it handle the click
+            if (btnDeploy.onclick) return;
 
-            if (!token) { window.location.href = '/auth/login'; return; } // REDIRECT TO LOGIN INCASE TOKEN INVALID
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = '/auth/login'; return; }
 
-            const email    = modalEmail.value.trim();
-            const reminder = modalReminder.value.trim();
+            // Query fresh refs  safe after any innerHTML reset
+            const reminderEl = getReminder();
+            const emailEl    = getEmail();
 
-            if (!reminder) { // VERIFY REMINDER IS GIVEN
-                modalReminder.focus();
-                modalReminder.style.borderColor = 'var(--danger)';
-                setTimeout(() => modalReminder.style.borderColor = '', 1500);
+            if (!reminderEl) return; // safety guard
+
+            const reminder = reminderEl.value.trim();
+            const email    = emailEl ? emailEl.value.trim() : '';
+
+            if (!reminder) {
+                reminderEl.focus();
+                reminderEl.style.borderColor = 'var(--danger)';
+                setTimeout(() => reminderEl.style.borderColor = '', 1500);
                 return;
             }
 
@@ -173,13 +197,10 @@
             btnDeploy.textContent = 'Deploying…';
 
             const payload = { reminder };
-            
             if (email) payload.callback_email = email;
 
-            // Pushing data to API endpoint
-
             try {
-                const res = await fetch(`/api/v1/triggers/create/${activeBaitId}`, {
+                const res = await fetch(`/api/v1/triggers/create/${activeBaitId}`, { // Attemping Bait Generation Given Remider & email
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -190,23 +211,73 @@
 
                 if (res.status === 401) { window.location.href = '/auth/login'; return; }
 
-                const result = await res.json(); // API Resp
+                const result = await res.json();
 
                 if (res.ok) {
-                    btnDeploy.textContent = 'Deployed!';
+                    btnDeploy.textContent      = 'Deployed!';
                     btnDeploy.style.background = 'var(--green)';
 
-                    // Auto-download for file-based baits
-                    const filename = result.data?.filename;
-                    const abbrev   = modalAbbrev.textContent.trim();
-                    const NO_DOWNLOAD = ['DOMAIN']; // ALL BAITS WITHOUT DOWNLOADABLE FILE GO HERE
+                    const filename    = result.data?.filename;
+                    const abbrev      = modalAbbrev.textContent.trim();
+                    const NO_DOWNLOAD = ['DOMAIN'];
 
-                    if (filename && !NO_DOWNLOAD.includes(abbrev)) {
+                    if (abbrev === 'DOMAIN' && Array.isArray(filename)) {
+                        // Show domain URL list inside modal body
+                        modalBody.innerHTML = `
+                            <div class="modal-title" style="margin-bottom:8px;">Domain URLs Deployed</div>
+                            <div class="modal-desc" style="margin-bottom:16px;">
+                                Copy any URL below and plant it where your target will access it.
+                            </div>
+                            ${filename.map(url => `
+                                <div style="
+                                    display:flex;
+                                    align-items:center;
+                                    justify-content:space-between;
+                                    background:var(--bg);
+                                    border:1px solid var(--border);
+                                    border-radius:6px;
+                                    padding:8px 12px;
+                                    margin-bottom:8px;
+                                    gap:10px;
+                                ">
+                                    <span style="
+                                        font-size:0.75rem;
+                                        color:var(--accent);
+                                        font-family:'IBM Plex Mono',monospace;
+                                        word-break:break-all;
+                                        flex:1;
+                                    ">${url}</span>
+                                    <button onclick="copyURL(this, '${url}')" style="
+                                        font-family:'IBM Plex Sans',sans-serif;
+                                        font-size:0.72rem;
+                                        font-weight:600;
+                                        padding:4px 10px;
+                                        background:transparent;
+                                        border:1px solid var(--accent);
+                                        border-radius:4px;
+                                        color:var(--accent);
+                                        cursor:pointer;
+                                        white-space:nowrap;
+                                        flex-shrink:0;
+                                    ">Copy</button>
+                                </div>
+                            `).join('')}
+                        `;
+                        // Swap deploy button to Close
+                        btnDeploy.textContent      = 'Close';
+                        btnDeploy.disabled         = false;
+                        btnDeploy.style.background = '';
+                        btnDeploy.onclick          = () => {
+                            closeModal();
+                            btnDeploy.onclick = null;
+                        };
+
+                    } else if (filename && !NO_DOWNLOAD.includes(abbrev)) {
+                        // Auto-download for file-based baits
                         try {
                             const dlRes = await fetch(`/downloads/${filename}`, {
                                 headers: { 'Authorization': `Bearer ${token}` }
                             });
-
                             if (dlRes.ok) {
                                 const blob = await dlRes.blob();
                                 const url  = URL.createObjectURL(blob);
@@ -223,18 +294,24 @@
                         } catch (dlErr) {
                             console.error('Auto-download error:', dlErr);
                         }
+                        setTimeout(() => {
+                            closeModal();
+                            btnDeploy.style.background = '';
+                        }, 1200);
+
+                    } else {
+                        // No file / URLs  to download  just close
+                        setTimeout(() => {
+                            closeModal();
+                            btnDeploy.style.background = '';
+                        }, 1200);
                     }
 
-                    setTimeout(() => {
-                        closeModal();
-                        btnDeploy.style.background = '';
-                    }, 1200);
-
-            } else {
-                alert('Deploy failed: ' + (result.message || res.statusText));
-                btnDeploy.disabled    = false;
-                btnDeploy.textContent = 'Deploy Bait';
-            }
+                } else {
+                    alert('Deploy failed: ' + (result.message || res.statusText));
+                    btnDeploy.disabled    = false;
+                    btnDeploy.textContent = 'Deploy Bait';
+                }
 
             } catch (err) {
                 console.error('Deploy error:', err);
@@ -242,10 +319,9 @@
                 btnDeploy.disabled    = false;
                 btnDeploy.textContent = 'Deploy Bait';
             }
-        
         });
 
-        // BaitsFallback icon if no image in image_path
+        // Fallback icons
         const FALLBACK_ICON = `
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;color:var(--muted)">
@@ -263,8 +339,8 @@
 
         let allBaits     = [];
         let activeFilter = 'all';
-        
-        // Bait Rendering Grid
+
+        // Bait grid rendering
         function renderGrid(baits) {
             const grid = document.getElementById('bait-grid');
             grid.innerHTML = '';
@@ -280,7 +356,7 @@
                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
                     : '';
 
-                const card = document.createElement('div'); // div not <a> — no page nav
+                const card = document.createElement('div');
                 card.className = 'bait-card';
                 card.style.animationDelay = `${i * 60}ms`;
                 card.innerHTML = `
@@ -301,14 +377,14 @@
                         </div>
                     </div>
                 `;
-
                 card.addEventListener('click', () => openModal(bait));
                 grid.appendChild(card);
             });
         }
-        // Filtering Baits
+
+        // Filtering. Needs Fixing to Auto react to new baits
         function applyFilters() {
-            const query = document.getElementById('search-input').value.toLowerCase().trim(); //Fetching search value
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
             let filtered = allBaits;
             if (activeFilter !== 'all') filtered = filtered.filter(b => b.type === activeFilter);
             if (query) filtered = filtered.filter(b =>
@@ -330,6 +406,33 @@
 
         document.getElementById('search-input').addEventListener('input', applyFilters);
 
+        // Copy DOMAIN bait URL helper . HTTP / HTTPS
+        function copyURL(btn, text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => btn.textContent = 'Copy', 1500);
+                });
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity  = '0';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    btn.textContent = 'Copied!';
+                } catch {
+                    btn.textContent = 'Failed';
+                }
+                setTimeout(() => btn.textContent = 'Copy', 1500);
+                ta.remove();
+            }
+        }
+
+        // Load baits from API
         async function loadBaits() {
             const token = localStorage.getItem('token');
             if (!token) { window.location.href = '/auth/login'; return; }
@@ -345,7 +448,7 @@
                 if (!res.ok || !result.data) {
                     document.getElementById('bait-grid').innerHTML = `
                         <div class="state-container">
-                            <span class="state-label">Failed to load baits — ${result.message || 'unknown error'}</span>
+                            <span class="state-label">Failed to load baits  ${result.message || 'unknown error'}</span>
                         </div>`;
                     return;
                 }
@@ -356,7 +459,7 @@
                 console.error('Load error:', err);
                 document.getElementById('bait-grid').innerHTML = `
                     <div class="state-container">
-                        <span class="state-label">Network error — check console</span>
+                        <span class="state-label">Network error. check console</span>
                     </div>`;
             }
         }
