@@ -5,7 +5,7 @@ from models import db # Database Module
 from blueprints.auth import auth_bp, auth_api_bp # Auth Blueprint for APIs & Page Routes
 from blueprints.baits import baits_bp # Baits Blueprint
 from blueprints.triggers import triggers_bp # Triggers Blueprint
-from blueprints.alerts import callback_bp # Alerts (callback) Blueprint
+from blueprints.alerts import callback_bp, callback_domain_bp # Alerts (callback) Blueprint
 from blueprints import views # HTML Page Rendering 
 
 from flask import Flask, request, render_template, jsonify
@@ -47,6 +47,7 @@ def register_blueprints():
     app.register_blueprint(baits_bp) # Registering Baits Blueprint
     app.register_blueprint(triggers_bp) # Registering Triggers Blueprint
     app.register_blueprint(callback_bp) # Registering Alerts Blueprint
+    app.register_blueprint(callback_domain_bp) # Registering DOMAIN callback Blueprint
 
     app.register_blueprint(views.views_bp) # Generale Blueprint for HTML Pages
 
