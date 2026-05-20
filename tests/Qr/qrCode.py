@@ -4,30 +4,31 @@ import qrcode.image.styledpil
 from qrcode.image.styles.moduledrawers import RoundedModuleDrawer
 from random import randint
 from datetime import datetime
-from pathlib import Path
+import sys
 
-# CONFIG
-DATA          = "http://192.168.100.10/callback"
-LOGO_PATH     = "default.jpg"          # set to None for logoless QR
+
+#CONFIG
+DATA      = "http://192.168.100.10/callback"
+LOGO_PATH = "default.jpg"          # set to None for logoless QR static/baits/qr
 DOWNLOADS_DIR = Path("static/downloads")
-OUTPUT        = "bait_card.png"
-
-CARD_W    = 900
-FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-FONT_REG  = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-FONT_MONO = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
-
-ACC_COL  = (20, 140, 20)      # dark green — visible on white
-TXT_COL  = (30, 30, 30)       # near-black
-WARN_COL = (80, 80, 80)       # dark grey
-REF_FILL = (230, 230, 230)    # light pill bg
-REF_OUT  = (180, 180, 180)    # light pill border
-REF_TXT  = (20, 100, 20)      # dark green text
-
-REF_NUMBER = f"IT-SEC-{datetime.now().year}-{randint(1000, 9999)}"
+OUTPUT    = "bait_card.png"
 
 
-# GENERATE CIRCULAR ORG LOGO
+CARD_W      = 900
+FONT_BOLD   = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+FONT_REG    = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+FONT_MONO   = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
+
+ACC_COL     = (34, 180, 34)
+TXT_COL     = (220, 220, 220)
+WARN_COL    = (140, 140, 140)
+REF_FILL    = (30, 30, 30)
+REF_OUT     = (60, 60, 60)
+REF_TXT     = (140, 200, 140)
+
+REF_NUMBER  = f"IT-SEC-{datetime.now().year }-{randint(1000, 9999)}"
+
+# GENERATE CIRCULAR ORG LOGO 
 def make_circle_logo(path, size):
     logo = Image.open(path).convert("RGBA").resize((size, size), Image.LANCZOS)
     mask = Image.new("L", (size, size), 0)
@@ -35,9 +36,8 @@ def make_circle_logo(path, size):
     logo.putalpha(mask)
     return logo
 
-
 def generate_bait_card(data=DATA, logo_path=LOGO_PATH, output=OUTPUT):
-    # QR with rounded modules, transparent background
+    # QR with rounded modules
     qr = qrcode.QRCode(
         error_correction=qrcode.constants.ERROR_CORRECT_H,
         box_size=12,
@@ -49,46 +49,48 @@ def generate_bait_card(data=DATA, logo_path=LOGO_PATH, output=OUTPUT):
     qr_img = qr.make_image(
         module_drawer=RoundedModuleDrawer(),
         fill_color="black",
-        back_color=(0, 0, 0, 0)
+        back_color=(0, 0, 0, 0)   # transparent background
     ).convert("RGBA")
 
     qr_w, qr_h = qr_img.size
 
-    # Embeding logo in QR if given
+    # Embeding logo if provided
     if logo_path:
-        LOGO_SIZE = int(qr_w * 0.22)
-        logo      = make_circle_logo(logo_path, LOGO_SIZE)
-        pad       = 12
-        circle_bg = Image.new("RGBA", qr_img.size, (0, 0, 0, 0))
-        cd        = ImageDraw.Draw(circle_bg)
-        lx        = (qr_w - LOGO_SIZE) // 2
-        ly        = (qr_h - LOGO_SIZE) // 2
-        cd.ellipse([lx-pad, ly-pad, lx+LOGO_SIZE+pad, ly+LOGO_SIZE+pad], fill=(255, 255, 255, 255))
-        qr_img    = Image.alpha_composite(qr_img, circle_bg)
+        LOGO_SIZE  = int(qr_w * 0.22)
+        logo       = make_circle_logo(logo_path, LOGO_SIZE)
+        pad        = 12
+        circle_bg  = Image.new("RGBA", qr_img.size, (0, 0, 0, 0))
+        cd         = ImageDraw.Draw(circle_bg)
+        lx         = (qr_w - LOGO_SIZE) // 2
+        ly         = (qr_h - LOGO_SIZE) // 2
+        cd.ellipse([lx-pad, ly-pad, lx+LOGO_SIZE+pad, ly+LOGO_SIZE+pad], fill=(255,255,255,255))
+        qr_img     = Image.alpha_composite(qr_img, circle_bg)
         qr_img.paste(logo, (lx, ly), mask=logo)
 
     # Resize QR for card
     QR_DISPLAY = 500
     qr_img = qr_img.resize((QR_DISPLAY, QR_DISPLAY), Image.LANCZOS)
 
-    # Round the QR corners
+    # Round the QR white background corners
+    radius = 32
     rounded_mask = Image.new("L", (QR_DISPLAY, QR_DISPLAY), 0)
     ImageDraw.Draw(rounded_mask).rounded_rectangle(
-        [0, 0, QR_DISPLAY, QR_DISPLAY], radius=32, fill=255
+        [0, 0, QR_DISPLAY, QR_DISPLAY], radius=radius, fill=255
     )
     qr_img.putalpha(rounded_mask)
 
-    # Fully transparent canvas — no black bg, no border
+    # Build canvas
     CARD_H = QR_DISPLAY + 300
-    card   = Image.new("RGBA", (CARD_W, CARD_H), (0, 0, 0, 0))
+    card   = Image.new("RGBA", (CARD_W, CARD_H), (0, 0, 0, 255))
+    bd     = ImageDraw.Draw(card)
+    bd.rounded_rectangle([0, 0, CARD_W-1, CARD_H-1], radius=28, outline=(50,50,50), width=2)
 
-    # Paste QR centered
+    # Paste QR (transparent bg blends onto dark card)
     qr_x = (CARD_W - QR_DISPLAY) // 2
     qr_y = 50
     card.paste(qr_img, (qr_x, qr_y), qr_img)
 
     # Separator
-    bd    = ImageDraw.Draw(card)
     sep_y = qr_y + QR_DISPLAY + 28
     bd.line([(CARD_W//2 - 160, sep_y), (CARD_W//2 + 160, sep_y)], fill=ACC_COL, width=2)
 
@@ -110,9 +112,9 @@ def generate_bait_card(data=DATA, logo_path=LOGO_PATH, output=OUTPUT):
         td.text(((CARD_W - tw) // 2, y), text, font=font, fill=color)
         return th
 
-    ty  = sep_y + 22
-    ty += center_text(ty, "INTERNAL ACCESS ONLY",                f_title, ACC_COL)  + 16
-    ty += center_text(ty, "Scan with authorized company device",  f_sub,  TXT_COL)  + 14
+    ty = sep_y + 22
+    ty += center_text(ty, "INTERNAL ACCESS ONLY",               f_title, ACC_COL)  + 16
+    ty += center_text(ty, "Scan with authorized company device", f_sub,  TXT_COL)  + 14
     ty += center_text(ty, "Restricted : Authorized Personnel Only", f_warn, WARN_COL) + 22
 
     # Ref pill
@@ -123,21 +125,16 @@ def generate_bait_card(data=DATA, logo_path=LOGO_PATH, output=OUTPUT):
     td.rounded_rectangle([rx-18, ty-8, rx+rw+18, ty+30], radius=6, fill=REF_FILL, outline=REF_OUT, width=1)
     td.text((rx, ty), ref_text, font=f_ref, fill=REF_TXT)
 
-    card.save(output, dpi=(300, 300))
+    card.save(output, dpi=(300, 300)) # Saving to specified path
+    print(f"Saved: {output}  Ref: {REF_NUMBER}")
 
-    # print(f"Saved: {output}  Ref: {REF_NUMBER}")
-    return str(Path(output).name)   # filename only Postfix avoids JSON serialization issues
-
-
-def qr_bait(data=DATA, logo_path=LOGO_PATH, token=None):
-
-    output_path = DOWNLOADS_DIR / f"{token}.png"
-    
-    # print("OUTPUT: ", output_path, 'DATA: ', data, 'TOKEN: ', token)
-
-    return generate_bait_card(data=data, logo_path=logo_path, output=output_path)
-
-
+def pdf_bait(data=DATA, logo_path=LOGO_PATH, token=None): # CALLBACK_URL, ORG_LOGO, TOKEN
+	output_path = DOWNLOADS_DIR / f"{token}.png"
+	print("OUTPUT: ", output_path)
+	
+	generate_bait_card(data=DATA, logo_path=logo_path, output=output_path) # CALLBACK_URL, ORG_LOGO, DOWNLOAD_PATH
+	
+	
 if __name__ == "__main__":
-    path = qr_bait()
-    print("QR saved to:", path)
+	#generate_bait_card()
+	pdf_bait()	
