@@ -5,6 +5,7 @@ from utils import api_response
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import uuid # For Generating Unique Token IDs
+import hashlib #
 
 import os
 from flask import current_app # accessing BASE CALLBACK_URL
@@ -41,10 +42,9 @@ triggers_bp = Blueprint('triggers', __name__, url_prefix='/api/v1/triggers')
 trigger_schema = Triggerschema()
 
 
-def generate_token():
-    return str(uuid.uuid4())
-
-
+def generate_token(): # Generates a Longer Token
+    token = str(uuid.uuid4())
+    return hashlib.sha256(token.encode()).hexdigest()[:16]  # 16 Len HEX
 
 
 # Function to Generate the Bait File. After Storing in the Db pull baits.bait_path
@@ -68,8 +68,7 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None):
         'pptx':       msoffice_bait,
         'pdf':        None,
         'fim':        None,
-        'mysql_dump': None,
-        'domain':     None,
+        'mysql_dump': None
     }
     # MS OFFICE
     if bait_abbrv.lower() in office_baits:
@@ -80,6 +79,21 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None):
     if bait_abbrv.lower() == 'qr':
         return qr_bait(data=callback_url_get, logo_path=template_path, token=token)  # Returns /static/download/<token>.png (ONLY FILENAME)
     
+
+    # DOMAIN
+    if bait_abbrv.lower() == "domain":
+        DOMAIN_LURES = [
+            "/payroll/q2-review",
+            "/hr/portal/login",
+            "/it/vpn-access",
+            "/finance/budget-approval",
+        ]
+        return [f"{callback_url}{path}?ref={token}" for path in DOMAIN_LURES]
+    
+    # Handles Untacked baits
+    else:
+        return "NOTHING BAIT MATCHED"
+
 
 @triggers_bp.route("/create/<int:bait_id>", methods=['POST'])
 @jwt_required()
@@ -149,12 +163,12 @@ def create_trigger(bait_id=None):
     bait_abbrv = bait_exists.abbrev
     template_path  = bait_exists.bait_path
     
-    filename = generate_bait_file(token=trigger_data.token, bait_abbrv=bait_abbrv, template_path=template_path) # Returns BAIT FILE
+    bait_output = generate_bait_file(token=trigger_data.token, bait_abbrv=bait_abbrv, template_path=template_path) # Returns BAIT FILE
 
-    print("filename: is: ", filename)
+    print("Bait Output: is: ", bait_output)
 
     return api_response(
-        data={"trigger": trigger_schema.dump(trigger_data), "filename":filename },
+        data={"trigger": trigger_schema.dump(trigger_data), "filename":bait_output}, # Verify from front it its not accessed directly as filename
         message="Trigger created successfully",
         code=201
     )
