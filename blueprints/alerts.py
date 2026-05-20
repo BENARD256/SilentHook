@@ -19,6 +19,8 @@ domain
 
 callback_bp = Blueprint('callback', __name__, url_prefix='/token')
 
+callback_domain_bp = Blueprint('callback_domain', __name__) # Specifically For domains
+
 # Schema Objects
 alert_schema = Alertschema()
 
@@ -74,18 +76,53 @@ def msoffice_callback(token_id):
     )
 
 
-# Domain Callback
-@callback_bp.route("<string:token_id>/payroll", methods=['GET'])
-def domain_callback(token_id):
+# Domain Callbacks
+@callback_domain_bp.route("/payroll/q2-review", methods=['GET']) # https://dbbd.com/payroll/q2-review?ref={short_token(token)}
+@callback_domain_bp.route("/hr/portal/login", methods=['GET'])
+@callback_domain_bp.route("/it/vpn-access", methods=['GET'])
+@callback_domain_bp.route("/finance/budget-approval", methods=['GET'])
+def domain_callback():
+    token_id = request.args.get('ref') # Pull token Given as Reference
+
     trigger_token = validate_token(token_id=token_id)
 
     if not trigger_token:
         return api_response(message="Invalid token", status="error", code=404)
 
-    return api_response(
-        data=trigger_token.token,
-        message="Valid"
+    # Bulding Alert
+    source_ip = request.remote_addr # Source IP
+    user_agent = request.headers.get('User-Agent', "Unknow")
+
+    alert = Alerts(
+        token = trigger_token.token, # Triggers.id : pointing to the specific token
+        source_ip = source_ip,
+        user_agent = user_agent
     )
+    
+    # Alert to DB
+
+    db.session.add(alert)
+    db.session.commit()
+    
+    # Refreshing Db Session
+    db.session.refresh(alert) # Making Sure it Returns updated Results
+
+    # SENDING EMAIL ALERTS
+    bait_type = trigger_token.bait.abbrev if trigger_token.bait else "UNKNOWN"
+
+    alert_dictionary = alert_schema.dump(alert) # Dictionary of all details in the Alert
+    print(alert_dictionary)
+
+    print("Emailing")
+    mailer(dst_mail=trigger_token.callback_email, bait_type=bait_type, reminder=trigger_token.reminder, alert_dict=alert_dictionary)
+    print("Sent")
+
+    return api_response(
+        data=alert_schema.dump(alert),
+        message="Valid" 
+    )
+
+
 
 ###################################################     FIM ENDPOINT    #############################################
 seen = set()
