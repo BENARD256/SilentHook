@@ -2,7 +2,7 @@ from models import db, Baits
 from schemas import Baitsschema, ValidationError
 from utils import api_response
 from flask import Blueprint, jsonify
-
+from flask_jwt_extended import jwt_required
 
 # Get all baits
 # Get a specific bait by ID / Abbrv
@@ -34,6 +34,7 @@ bait_schema = Baitsschema()
 @baits_bp.route("/", methods=['GET'])
 @baits_bp.route('/<int:bait_id>', methods=['GET']) # Filter by ID
 @baits_bp.route('/<string:abbrev>',methods=['GET']) # Filter by Abbreviation
+@jwt_required()
 def get_baits(bait_id=None, abbrev=None):
     if bait_id:
         bait = Baits.query.get(bait_id)
