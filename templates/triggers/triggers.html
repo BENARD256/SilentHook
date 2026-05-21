@@ -1,11 +1,12 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triggers — DBBD</title>
+    <title>Triggers DBBD</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/static/css/triggers/triggers.css">
+
 </head>
 
 <body>
@@ -59,7 +60,7 @@
     </div>
 
     <script>
-        // Modal state
+        //   Modal state
         let pendingDeleteId  = null;
         let pendingDeleteRow = null;
 
@@ -73,7 +74,7 @@
             pendingDeleteRow = row;
             modalToken.textContent = token;
             modal.classList.add('open');
-            btnConfirm.disabled = false;
+            btnConfirm.disabled    = false;
             btnConfirm.textContent = 'Delete Bait';
         }
 
@@ -92,10 +93,8 @@
             const authToken = localStorage.getItem('token');
             if (!authToken) { window.location.href = '/auth/login'; return; }
 
-            btnConfirm.disabled = true;
+            btnConfirm.disabled    = true;
             btnConfirm.textContent = 'Deleting…';
-
-            console.log('Attempting DELETE:', `/api/v1/triggers/${pendingDeleteId}`); // ← add this
 
             try {
                 const res = await fetch(`/api/v1/triggers/${pendingDeleteId}`, {
@@ -103,39 +102,51 @@
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
-                console.log('Response status:', res.status); // ← and this
+                if (res.status === 401) { window.location.href = '/auth/login'; return; }
 
-                if (res.status === 401) {
-                    window.location.href = '/auth/login';
-                    return;
+                if (res.ok) {
+                    // Refresh only if res.ok : STATUS is 200
+                    pendingDeleteRow.style.transition = 'opacity 0.3s, transform 0.3s';
+                    pendingDeleteRow.style.opacity    = '0';
+                    pendingDeleteRow.style.transform  = 'translateX(12px)';
+                    setTimeout(() => {
+                        // pendingDeleteRow.remove(); // As counter gets to 300 its already null
+                        rowToRemove.remove();
+                        updateBadgeCount(-1);
+                    }, 300);
+
+                    closeModal(); // Refresh Table 
+                    loadTriggers();
+
+                } else {
+                    const result = await res.json();
+                    alert('Delete failed: ' + (result.message || res.statusText));
+                    btnConfirm.disabled    = false;
+                    btnConfirm.textContent = 'Delete Bait';
                 }
 
-                // Remove row regardless — optimistic UI
-                pendingDeleteRow.style.transition = 'opacity 0.3s, transform 0.3s';
-                pendingDeleteRow.style.opacity = '0';
-                pendingDeleteRow.style.transform = 'translateX(12px)';
-                setTimeout(() => { pendingDeleteRow.remove(); updateBadgeCount(-1); }, 300);
-                closeModal();
-
             } catch (err) {
-                console.error("Delete error:", err); // ← this tells us if it's a network/CORS issue
-                closeModal(); // close modal even on error
+                console.error('Delete error:', err);
+                alert('Network error during delete.');
+                btnConfirm.disabled    = false;
+                btnConfirm.textContent = 'Delete Bait';
+                closeModal();
             }
         });
 
-        // Badge count helper 
+        //Badge count helper
         function updateBadgeCount(delta) {
-            const badge = document.getElementById('count-badge');
+            const badge   = document.getElementById('count-badge');
             const current = parseInt(badge.dataset.count || '0') + delta;
             badge.dataset.count = current;
-            badge.textContent = `${current} bait${current !== 1 ? 's' : ''}`;
+            badge.textContent   = `${current} bait${current !== 1 ? 's' : ''}`;
             if (current === 0) {
                 document.getElementById('trigger-table-body').innerHTML =
                     '<tr class="state-row"><td colspan="6">No baits deployed yet.</td></tr>';
             }
         }
 
-        // Load Baits to table
+        //Load triggers from API
         async function loadTriggers() {
             const token = localStorage.getItem('token');
             if (!token) { window.location.href = '/auth/login'; return; }
@@ -147,8 +158,7 @@
                 });
 
                 if (response.status === 401) {
-                    alert("Session expired. Redirecting to login.");
-                    window.location.href = "/auth/login";
+                    window.location.href = '/auth/login';
                     return;
                 }
 
@@ -167,18 +177,20 @@
                 }
 
                 const badge = document.getElementById('count-badge');
-                badge.textContent  = `${result.data.length} bait${result.data.length !== 1 ? 's' : ''}`;
+                badge.textContent   = `${result.data.length} bait${result.data.length !== 1 ? 's' : ''}`;
                 badge.dataset.count = result.data.length;
                 badge.classList.add('visible');
 
                 result.data.forEach((trigger, i) => {
                     const row = document.createElement('tr');
                     row.style.animationDelay = `${i * 40}ms`;
+
+                    // reminder-cell left EMPTY in innerHTML filled via textContent below
                     row.innerHTML = `
                         <td>${trigger.id}</td>
                         <td class="token-cell" title="${trigger.token}">${trigger.token}</td>
-                        <td class="email-cell">${trigger.callback_email}</td>
-                        <td class="reminder-cell">${trigger.reminder}</td>
+                        <td class="email-cell">${trigger.callback_email || '—'}</td>
+                        <td class="reminder-cell"></td>
                         <td class="date-cell">${new Date(trigger.created_at).toLocaleString()}</td>
                         <td style="text-align:center;">
                             <button class="btn-delete" title="Delete bait"
@@ -194,15 +206,20 @@
                             </button>
                         </td>
                     `;
+
+                    // XSS fix: textContent never executes scripts
+                    row.querySelector('.reminder-cell').textContent = trigger.reminder;
+
                     row.querySelector('.btn-delete').addEventListener('click', (e) => {
                         const btn = e.currentTarget;
                         openModal(btn.dataset.id, btn.dataset.token, row);
                     });
+
                     tableBody.appendChild(row);
                 });
 
             } catch (err) {
-                console.error("Network or parse error:", err);
+                console.error('Network or parse error:', err);
                 document.getElementById('trigger-table-body').innerHTML =
                     '<tr class="state-row"><td colspan="6">Network error — check console.</td></tr>';
             }

@@ -26,13 +26,13 @@ body {
     padding: 48px 24px;
 }
 
-/* ── Page wrapper ── */
+/* Page wrapper */
 .page-wrapper {
     max-width: 1100px;
     margin: 0 auto;
 }
 
-/* ── Header ── */
+/* Header */
 .page-header {
     display: flex;
     align-items: center;
@@ -40,6 +40,8 @@ body {
     margin-bottom: 32px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .page-header h1 {
@@ -67,16 +69,34 @@ body {
 }
 .badge.visible { opacity: 1; }
 
-/* ── Table card ── */
+/* Table card */
 .table-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 8px;
-    overflow: hidden;
+    overflow-x: auto;                  /* horizontal scroll on small screens */
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+}
+
+/* Scrollbar styling  subtle, matches dark theme */
+.table-card::-webkit-scrollbar {
+    height: 5px;
+}
+.table-card::-webkit-scrollbar-track {
+    background: transparent;
+}
+.table-card::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+.table-card::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
 }
 
 table {
     width: 100%;
+    min-width: 640px;                  /* never collapses below this */
     border-collapse: collapse;
 }
 
@@ -154,7 +174,7 @@ td:first-child {
     font-size: 0.82rem;
 }
 
-/* ── Empty / loading states ── */
+/*Empty / loading states */
 .state-row td {
     padding: 48px 20px;
     text-align: center;
@@ -174,7 +194,7 @@ td:first-child {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Delete button ── */
+/* Delete button */
 .btn-delete {
     background: none;
     border: 1px solid transparent;
@@ -195,7 +215,7 @@ td:first-child {
 }
 .btn-delete svg { pointer-events: none; }
 
-/* ── Confirmation modal ── */
+/* Confirmation modal */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -215,6 +235,7 @@ td:first-child {
     padding: 32px;
     width: 100%;
     max-width: 420px;
+    margin: 0 16px;
     animation: modalIn 0.2s ease;
 }
 @keyframes modalIn {
@@ -286,3 +307,23 @@ td:first-child {
 }
 .btn-confirm-delete:hover { background: #c93d36; border-color: #c93d36; }
 .btn-confirm-delete:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/*Mobile responsiveness */
+@media (max-width: 600px) {
+    body {
+        padding: 16px 12px 60px;
+    }
+    .page-header h1 {
+        font-size: 1rem;
+    }
+    td, th {
+        padding: 10px 10px;
+        font-size: 0.78rem;
+    }
+    .token-cell {
+        max-width: 100px;
+    }
+    .modal {
+        padding: 24px 16px;
+    }
+}
