@@ -87,5 +87,5 @@ class Alert_history(db.Model):
     delivery_status = db.Column(db.Enum('sent', 'failed'), default='sent')
 
     def __repr__(self):
-        return f"<notification {self.id}>"
+        return f"<alert_history {self.id}>"
     
