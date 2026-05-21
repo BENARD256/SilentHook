@@ -1,9 +1,9 @@
 from models import db, Users, Baits, Triggers, Alerts, Watcher_events, Mysql_events
 
-from marshmallow import validate, ValidationError
+from marshmallow import validate, validates, ValidationError
 
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, auto_field
-
+import bleach, unicodedata
 import re # IP Validation Lib
 
 class Userschema(SQLAlchemyAutoSchema):
@@ -43,6 +43,38 @@ class Triggerschema(SQLAlchemyAutoSchema):
     bait_id = auto_field(required=False)
     created_at = auto_field(dump_only=True) # Not required in input, only in output
 
+    @validates('reminder')
+    def validate_reminder(self, value):
+        try:
+            # Normalizing unicode characters
+            value = unicodedata.normalize('NFKC', value)
+            
+            # Stripping all HTML tags entirely using bleach
+            cleaned = bleach.clean(value, tags=[], attributes={}, strip=True)
+            
+            if cleaned != value: # Verifying tags are stripped incase present.
+                raise ValidationError("Reminder contains invalid characters.")
+            
+            # Stripping JS injection patterns not caught by tag stripping
+            if re.search(r'javascript:|vbscript:|data:|on\w+\s*=|expression\s*\(', cleaned, re.IGNORECASE):
+                raise ValidationError("Reminder contains invalid characters.")
+            
+            if '\x00' in value: # Block null bytes
+                raise ValidationError("Reminder contains invalid characters.")
+
+            if len(cleaned.strip()) < 3: # Length Validation
+                raise ValidationError("Reminder must be at least 3 characters.")
+            if len(cleaned) > 250:
+                raise ValidationError("Reminder must not exceed 250 characters.")
+            
+            return cleaned.strip()
+
+        except ValidationError:
+            raise # raise Validation error
+
+        except Exception as e:
+            print("VALIDATOR CRASH:", type(e).__name__, e)
+            raise ValidationError("Reminder validation failed unexpectedly.")
 
 class Alertschema(SQLAlchemyAutoSchema):
     class Meta:
