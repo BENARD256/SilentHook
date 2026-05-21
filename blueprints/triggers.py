@@ -1,4 +1,4 @@
-from models import db, Triggers, Baits, Users, Alerts
+from models import db, Triggers, Baits, Users, Alerts, Watcher_events
 from schemas import Triggerschema, ValidationError
 from utils import api_response
 
@@ -238,6 +238,12 @@ def delete_trigger(id=None): # user deleting a bait has to be the owner
         )
     # Delete child alerts first before deleting the trigger. (Foreign Key relationship)
     Alerts.query.filter_by(token=trigger.token).delete()
+
+    # Incase Bait Was FIM
+    Watcher_events.query.filter_by(token=trigger.token).delete()  # (Clearing FK Relationships)
+
+    # Future Tabes MySql 
+    #MysqlEvents.query.filter_by(token=trigger.token).delete()
 
     db.session.delete(trigger)
     db.session.commit()
