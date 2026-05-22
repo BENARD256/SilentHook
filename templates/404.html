@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 — DBBD</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;background:#0d0d0d;color:#fff}
+        .wrap{text-align:center;padding:3rem 2rem;max-width:520px;margin:auto}
+        .code{font-size:120px;font-weight:500;line-height:1;letter-spacing:-4px;user-select:none;display:inline-flex;gap:2px}
+        .code span{display:inline-block;animation:float 3s ease-in-out infinite}
+        .code span:nth-child(1){animation-delay:0s;color:#534AB7}
+        .code span:nth-child(2){animation-delay:.3s;color:#fff}
+        .code span:nth-child(3){animation-delay:.6s;color:#D85A30}
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+        .glitch{position:relative;display:inline-block}
+        .glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;font-size:120px;font-weight:500;letter-spacing:-4px;line-height:1}
+        .glitch::before{color:#534AB7;clip-path:polygon(0 30%,100% 30%,100% 50%,0 50%);animation:glitch1 2.5s infinite;opacity:.6}
+        .glitch::after{color:#D85A30;clip-path:polygon(0 60%,100% 60%,100% 75%,0 75%);animation:glitch2 2.5s infinite;opacity:.6}
+        @keyframes glitch1{0%,90%,100%{transform:none}92%{transform:translateX(-4px)}94%{transform:translateX(4px)}96%{transform:none}}
+        @keyframes glitch2{0%,88%,100%{transform:none}90%{transform:translateX(4px)}93%{transform:translateX(-4px)}96%{transform:none}}
+        .title{font-size:20px;font-weight:500;margin:1.5rem 0 .75rem}
+        .sub{font-size:14px;color:#888;line-height:1.7;margin-bottom:2rem}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border-radius:8px;border:1px solid #333;background:transparent;color:#fff;font-size:14px;cursor:pointer;text-decoration:none;transition:background .15s}
+        .btn:hover{background:#1a1a1a}
+        .particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:-1}
+        .p{position:absolute;width:4px;height:4px;border-radius:50%;opacity:0;animation:rise 4s ease-in infinite}
+        @keyframes rise{0%{opacity:0;transform:translateY(100vh) scale(0)}20%{opacity:.6}80%{opacity:.3}100%{opacity:0;transform:translateY(-10vh) scale(1.5)}}
+        .scan{position:fixed;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,transparent,#534AB7,transparent);animation:scan 3s linear infinite;z-index:-1;opacity:.4}
+        @keyframes scan{0%{top:0}100%{top:100%}}
+        .morse{font-family:monospace;font-size:11px;color:#444;letter-spacing:3px;margin-top:2rem;animation:blink 1.5s ease-in-out infinite}
+        @keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
+    </style>
+</head>
+<body>
+<div class="particles" id="particles"></div>
+<div class="scan"></div>
+
+<div class="wrap">
+    <div class="code">
+        <span>4</span>
+        <span class="glitch" data-text="0">0</span>
+        <span>4</span>
+    </div>
+    <div class="title">Bait not found — or maybe it was the intruder</div>
+    <p class="sub">The page you were looking for doesn't exist, has been moved, or was a deception token all along. Either way, you shouldn't be here.</p>
+    <a class="btn" href="/dashboard">
+        <i class="ti ti-arrow-left"></i>
+        Back to dashboard
+    </a>
+    <div class="morse">. — — . / .- -. -.. / -.-- --- ..- .-..</div>
+</div>
+
+<script>
+    const c = document.getElementById('particles')
+    const colors = ['#534AB7','#D85A30','#1D9E75','#D4537E','#378ADD']
+    for(let i=0;i<25;i++){
+        const p = document.createElement('div')
+        p.className = 'p'
+        p.style.left = Math.random()*100+'%'
+        p.style.animationDelay = Math.random()*4+'s'
+        p.style.animationDuration = (3+Math.random()*3)+'s'
+        p.style.background = colors[Math.floor(Math.random()*colors.length)]
+        p.style.width = p.style.height = (2+Math.random()*4)+'px'
+        c.appendChild(p)
+    }
+
+    function beep(freq=440,dur=0.1,vol=0.05){
+        try{
+            const ctx=new(window.AudioContext||window.webkitAudioContext)()
+            const o=ctx.createOscillator(),g=ctx.createGain()
+            o.connect(g);g.connect(ctx.destination)
+            o.frequency.value=freq;o.type='square'
+            g.gain.setValueAtTime(vol,ctx.currentTime)
+            g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur)
+            o.start();o.stop(ctx.currentTime+dur)
+        }catch(e){}
+    }
+
+    document.querySelectorAll('.code span').forEach((d,i)=>{
+        d.addEventListener('mouseenter',()=>{
+            beep([440,330,550][i],.08,.05)
+            d.style.transform='scale(1.15)'
+            setTimeout(()=>d.style.transform='',200)
+        })
+    })
+
+    // Easter egg — type "dbbd"
+    let seq=''
+    document.addEventListener('keydown',e=>{
+        seq+=e.key
+        if(seq.includes('dbbd')){
+            beep(880,.05,.08)
+            setTimeout(()=>beep(1100,.05,.08),100)
+            setTimeout(()=>beep(1320,.1,.08),200)
+            seq=''
+        }
+        if(seq.length>10) seq=seq.slice(-10)
+    })
+</script>
+</body>
+</html>

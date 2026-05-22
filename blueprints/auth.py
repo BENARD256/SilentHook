@@ -98,7 +98,8 @@ def login_api():
 
     # JWT Token Generation
     print("TYPE OF JWT: ", user.id, type(user.id))
-    jwt_token = create_access_token(identity=user.id)
+    
+    jwt_token = create_access_token(identity=str(user.id))
 
     #return user_schema.dump(user), 200 # OK  
     return api_response(

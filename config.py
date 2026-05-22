@@ -12,7 +12,11 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # JWT Config
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    #JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "cb94c9df0549cb3be373d24af98146b88df955f64ecdd81313c1305f65374401")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "a9a807b1ab3c90e78dc6dda34bc38d9baa51cbcdcd281e24f8c0d13f62a7361b")
+
+    ## using to gnerate ..''openssl rand -hex 32''
 
     # Call_Back_Url
     #CALLBACK_URL = os.environ.get('CALLBACK_URL', 'http://127.0.0.1:5000')
