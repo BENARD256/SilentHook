@@ -69,14 +69,14 @@
                 <span class="modal-abbrev" id="modal-abbrev">—</span>
             </div>
 
-            <!-- X close button (overlaid on image) -->
+            <!-- X close button -->
             <button class="modal-close" id="modal-close" title="Close">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
                     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
             </button>
 
-            <!-- Body  never grab refs to children outside openModal, always re-query after reset -->
+            <!-- Body -->
             <div class="modal-body" id="modal-body">
                 <div class="modal-title" id="modal-title">—</div>
                 <div class="modal-desc" id="modal-desc">—</div>
@@ -91,7 +91,7 @@
                 </p>
             </div>
 
-            <!-- Footer full-width deploy button -->
+            <!-- Footer -->
             <div class="modal-footer">
                 <button class="btn-deploy" id="btn-deploy">Deploy Bait</button>
             </div>
@@ -100,8 +100,9 @@
     </div>
 
     <script>
-        // Stable refs (elements that never get replaced by innerHTML reset)
-        let activeBaitId = null;
+        //Stable refs
+        let activeBaitId  = null;
+        let activeBaitObj = null; // track full bait object for abbrev checks
 
         const modal         = document.getElementById('deploy-modal');
         const modalImg      = document.getElementById('modal-img');
@@ -110,14 +111,17 @@
         const modalBody     = document.getElementById('modal-body');
         const btnDeploy     = document.getElementById('btn-deploy');
 
-        // Helper: always query from DOM (never cache these. they get replaced on DOMAIN reset)
+        // Always re-query after innerHTML reset
         const getReminder = () => document.getElementById('modal-reminder');
         const getEmail    = () => document.getElementById('modal-email');
         const getTitle    = () => document.getElementById('modal-title');
         const getDesc     = () => document.getElementById('modal-desc');
+        const getQRImage  = () => document.getElementById('modal-qr-image');
 
-        // ── Reset modal body to default form state ──
-        function resetModalBody() {
+        // ── Default modal body ──
+        function resetModalBody(abbrev) {
+            const isQR = abbrev === 'QR';
+
             modalBody.innerHTML = `
                 <div class="modal-title" id="modal-title">—</div>
                 <div class="modal-desc" id="modal-desc">—</div>
@@ -126,16 +130,46 @@
                 <label class="field-label" for="modal-email">Alert Email <span style="color:var(--muted);font-size:0.65rem;text-transform:none;letter-spacing:0;">(optional)</span></label>
                 <input class="field-input" id="modal-email" type="email" placeholder="alerts@yourcompany.com">
                 <p class="field-hint">Leave blank to use your Account email. Alerts will be sent here when the bait is triggered.</p>
+                ${isQR ? `
+                <label class="field-label" for="modal-qr-image" style="margin-top:12px;">
+                    Center Logo
+                    <span style="color:var(--muted);font-size:0.65rem;text-transform:none;letter-spacing:0;">(optional PNG/JPG)</span>
+                </label>
+                <div class="qr-upload-wrap" id="qr-upload-wrap">
+                    <input type="file" id="modal-qr-image" accept="image/png,image/jpeg,image/webp,image/gif"
+                           style="display:none;">
+                    <button type="button" class="qr-upload-btn" id="qr-upload-btn">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        Choose image
+                    </button>
+                    <span class="qr-file-name" id="qr-file-name">No file chosen</span>
+                </div>
+                <p class="field-hint">Upload a logo to embed in the center of the QR code. Leave blank to use the default icon.</p>
+                ` : ''}
             `;
+
+            // Wire up QR file input button
+            if (isQR) {
+                document.getElementById('qr-upload-btn').addEventListener('click', () => {
+                    document.getElementById('modal-qr-image').click();
+                });
+                document.getElementById('modal-qr-image').addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    document.getElementById('qr-file-name').textContent = file ? file.name : 'No file chosen';
+                });
+            }
         }
 
         function openModal(bait) {
-            // Always reset body first so form fields exist in DOM
-            resetModalBody();
+            activeBaitId  = bait.id;
+            activeBaitObj = bait;
 
-            activeBaitId = bait.id;
+            resetModalBody(bait.abbrev);
 
-            // Populate image
             if (bait.image_path) {
                 modalImg.src = '/' + bait.image_path;
                 modalImg.alt = bait.name;
@@ -154,14 +188,15 @@
             btnDeploy.disabled         = false;
             btnDeploy.textContent      = 'Deploy Bait';
             btnDeploy.style.background = '';
-            btnDeploy.onclick          = null; // clear any DOMAIN close handler
+            btnDeploy.onclick          = null;
 
             modal.classList.add('open');
         }
 
         function closeModal() {
             modal.classList.remove('open');
-            activeBaitId = null;
+            activeBaitId  = null;
+            activeBaitObj = null;
         }
 
         document.getElementById('modal-close').addEventListener('click', closeModal);
@@ -170,21 +205,18 @@
         // Deploy button
         btnDeploy.addEventListener('click', async () => {
             if (!activeBaitId) return;
-
-            // If DOMAIN close handler is active (onclick set), let it handle the click
-            if (btnDeploy.onclick) return;
+            if (btnDeploy.onclick) return; // DOMAIN close handler active
 
             const token = localStorage.getItem('token');
             if (!token) { window.location.href = '/auth/login'; return; }
 
-            // Query fresh refs  safe after any innerHTML reset
             const reminderEl = getReminder();
             const emailEl    = getEmail();
-
-            if (!reminderEl) return; // safety guard
+            if (!reminderEl) return;
 
             const reminder = reminderEl.value.trim();
             const email    = emailEl ? emailEl.value.trim() : '';
+            const abbrev   = modalAbbrev.textContent.trim();
 
             if (!reminder) {
                 reminderEl.focus();
@@ -196,18 +228,38 @@
             btnDeploy.disabled    = true;
             btnDeploy.textContent = 'Deploying…';
 
-            const payload = { reminder };
-            if (email) payload.callback_email = email;
+            // ── Build request — FormData for QR, JSON for everything else ──
+            let fetchOptions;
 
-            try {
-                const res = await fetch(`/api/v1/triggers/create/${activeBaitId}`, { // Attemping Bait Generation Given Remider & email
+            if (abbrev === 'QR') {
+                const formData = new FormData();
+                formData.append('reminder', reminder);
+                if (email) formData.append('callback_email', email);
+                const qrImageEl = getQRImage();
+                if (qrImageEl && qrImageEl.files[0]) {
+                    formData.append('qr_image', qrImageEl.files[0]);
+                }
+                fetchOptions = {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    // NO Content-Type — browser sets multipart boundary automatically
+                    body: formData
+                };
+            } else {
+                const payload = { reminder };
+                if (email) payload.callback_email = email;
+                fetchOptions = {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(payload)
-                });
+                };
+            }
+
+            try {
+                const res = await fetch(`/api/v1/triggers/create/${activeBaitId}`, fetchOptions);
 
                 if (res.status === 401) { window.location.href = '/auth/login'; return; }
 
@@ -218,11 +270,9 @@
                     btnDeploy.style.background = 'var(--green)';
 
                     const filename    = result.data?.filename;
-                    const abbrev      = modalAbbrev.textContent.trim();
                     const NO_DOWNLOAD = ['DOMAIN'];
 
                     if (abbrev === 'DOMAIN' && Array.isArray(filename)) {
-                        // Show domain URL list inside modal body
                         modalBody.innerHTML = `
                             <div class="modal-title" style="margin-bottom:8px;">Domain URLs Deployed</div>
                             <div class="modal-desc" style="margin-bottom:16px;">
@@ -263,7 +313,6 @@
                                 </div>
                             `).join('')}
                         `;
-                        // Swap deploy button to Close
                         btnDeploy.textContent      = 'Close';
                         btnDeploy.disabled         = false;
                         btnDeploy.style.background = '';
@@ -273,7 +322,6 @@
                         };
 
                     } else if (filename && !NO_DOWNLOAD.includes(abbrev)) {
-                        // Auto-download for file-based baits
                         try {
                             const dlRes = await fetch(`/downloads/${filename}`, {
                                 headers: { 'Authorization': `Bearer ${token}` }
@@ -300,7 +348,6 @@
                         }, 1200);
 
                     } else {
-                        // No file / URLs  to download  just close
                         setTimeout(() => {
                             closeModal();
                             btnDeploy.style.background = '';
@@ -321,7 +368,7 @@
             }
         });
 
-        // Fallback icons
+        //Fallback icons
         const FALLBACK_ICON = `
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;color:var(--muted)">
@@ -382,7 +429,7 @@
             });
         }
 
-        // Filtering. Needs Fixing to Auto react to new baits
+        // Filtering
         function applyFilters() {
             const query = document.getElementById('search-input').value.toLowerCase().trim();
             let filtered = allBaits;
@@ -406,7 +453,7 @@
 
         document.getElementById('search-input').addEventListener('input', applyFilters);
 
-        // Copy DOMAIN bait URL helper . HTTP / HTTPS
+        //Copy URL helper — HTTP + HTTPS
         function copyURL(btn, text) {
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(text).then(() => {
@@ -432,7 +479,7 @@
             }
         }
 
-        // Load baits from API
+        //Load baits from API
         async function loadBaits() {
             const token = localStorage.getItem('token');
             if (!token) { window.location.href = '/auth/login'; return; }
@@ -448,7 +495,7 @@
                 if (!res.ok || !result.data) {
                     document.getElementById('bait-grid').innerHTML = `
                         <div class="state-container">
-                            <span class="state-label">Failed to load baits  ${result.message || 'unknown error'}</span>
+                            <span class="state-label">Failed to load baits — ${result.message || 'unknown error'}</span>
                         </div>`;
                     return;
                 }
@@ -459,7 +506,7 @@
                 console.error('Load error:', err);
                 document.getElementById('bait-grid').innerHTML = `
                     <div class="state-container">
-                        <span class="state-label">Network error. check console</span>
+                        <span class="state-label">Network error — check console</span>
                     </div>`;
             }
         }

@@ -48,7 +48,7 @@ def generate_token(): # Generates a Longer Token
 
 
 # Function to Generate the Bait File. After Storing in the Db pull baits.bait_path
-def generate_bait_file(token=None, bait_abbrv=None, template_path=None): 
+def generate_bait_file(token=None, bait_abbrv=None, template_path=None, center_image=None): 
 
     # Base Callback_url
     callback_url = current_app.config['CALLBACK_URL'] # Accessing url from config.py
@@ -77,9 +77,8 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None):
 
     # QR CODE
     if bait_abbrv.lower() == 'qr':
-        return qr_bait(data=callback_url_get, logo_path=template_path, token=token)  # Returns /static/download/<token>.png (ONLY FILENAME)
-    
-
+        return qr_bait(data=callback_url_get, logo_path=center_image, token=token)  # Returns /static/download/<token>.png (ONLY FILENAME)
+ 
     # DOMAIN
     if bait_abbrv.lower() == "domain":
         DOMAIN_LURES = [
@@ -108,8 +107,13 @@ def create_trigger(bait_id=None):
             code=404
         )
 
-    trigger_data = request.json
-    
+    # Detect QR with Image
+    if request.content_type and 'multipart/form-data' in request.content_type:
+        trigger_data = {'reminder': request.form.get('reminder'),  'callback_email': request.form.get('callback_email')}
+    else:    
+        trigger_data = request.json
+     
+    # Sanization & JSON Deserialization.
     try:
         trigger_data = trigger_schema.load(trigger_data, partial=True)  # Validation & Deserialize  of email, reminder to Dict not Database object 
         
@@ -146,6 +150,16 @@ def create_trigger(bait_id=None):
     db.session.commit()
     db.session.refresh(trigger_data) # Refreshing Null Fields 
     
+
+    # QRCODE BAIT IMAGE FILE
+    center_image_path = None # Incase not  a QRBait
+    if bait_exists.abbrev == 'QR' and 'qr_image' in request.files:
+        file = request.files['qr_image']
+        ext = file.filename.rsplit('.', 1)[-1].lower()
+        if ext in ['png', 'jpg', 'jpeg']:
+            center_image_path = f'static/tmp/{trigger_data.token}_center.{ext}'
+            file.save(center_image_path)
+
     
     # Bait Generation
 
@@ -163,7 +177,7 @@ def create_trigger(bait_id=None):
     bait_abbrv = bait_exists.abbrev
     template_path  = bait_exists.bait_path
     
-    bait_output = generate_bait_file(token=trigger_data.token, bait_abbrv=bait_abbrv, template_path=template_path) # Returns BAIT FILE
+    bait_output = generate_bait_file(token=trigger_data.token, bait_abbrv=bait_abbrv, template_path=template_path, center_image=center_image_path) # Returns BAIT FILE
 
     print("Bait Output: is: ", bait_output)
 

@@ -129,8 +129,10 @@ def generate_bait_card(data=DATA, logo_path=LOGO_PATH, output=OUTPUT):
     return str(Path(output).name)   # filename only Postfix avoids JSON serialization issues
 
 
-def qr_bait(data=DATA, logo_path=LOGO_PATH, token=None):
-
+def qr_bait(data=DATA, logo_path=None, token=None):
+    if logo_path is None:
+        logo_path = "static/baits/qr/default_icon.jpg" # Default Image
+    
     output_path = DOWNLOADS_DIR / f"{token}.png"
     
     # print("OUTPUT: ", output_path, 'DATA: ', data, 'TOKEN: ', token)
