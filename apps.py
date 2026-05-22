@@ -60,11 +60,9 @@ def test_db_connection(): # Function to test DB connection
     else:
         print("[+] Database Connection Successful [+]")
 
-
+register_blueprints() # Register Blueprints Ealier
 
 if __name__ == "__main__":
     test_db_connection()
-    register_blueprints()
-
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', reloader_type='stat')
 
