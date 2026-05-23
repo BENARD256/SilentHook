@@ -1,4 +1,4 @@
-/* ── DBBD Login Page Styles ── */
+/* DBBD Login Page Styles */
 /* Reference: <link rel="stylesheet" href="/static/css/auth/login.css"> */
 
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
@@ -30,7 +30,7 @@ body {
     padding: 24px;
 }
 
-/* ── Background glow ── */
+/* Background glow */
 body::before {
     content: '';
     position: fixed;
@@ -44,7 +44,7 @@ body::before {
     z-index: 0;
 }
 
-/* ── Card ── */
+/* Card */
 .login-card {
     position: relative;
     z-index: 1;
@@ -56,7 +56,7 @@ body::before {
     max-width: 400px;
 }
 
-/* ── Brand ── */
+/*  Brand */
 .brand {
     text-align: center;
     margin-bottom: 28px;
@@ -80,14 +80,14 @@ body::before {
     letter-spacing: 0.04em;
 }
 
-/* ── Divider ── */
+/* Divider */
 .divider {
     height: 1px;
     background: var(--border);
     margin-bottom: 28px;
 }
 
-/* ── Form heading ── */
+/* Form heading */
 .form-heading {
     font-size: 1rem;
     font-weight: 600;
@@ -95,7 +95,7 @@ body::before {
     margin-bottom: 20px;
 }
 
-/* ── Fields ── */
+/* Fields */
 .field {
     margin-bottom: 16px;
 }
@@ -133,7 +133,7 @@ body::before {
     box-shadow: 0 0 0 3px var(--danger-dim);
 }
 
-/* ── Error message ── */
+/* Error message */
 .error-msg {
     display: none;
     font-size: 0.78rem;
@@ -147,7 +147,7 @@ body::before {
 }
 .error-msg.visible { display: block; }
 
-/* ── Submit button ── */
+/* Submit button */
 .btn-login {
     font-family: 'IBM Plex Sans', sans-serif;
     font-size: 0.9rem;
@@ -182,7 +182,7 @@ body::before {
 .btn-login.loading .btn-spinner { display: block; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Footer link ── */
+/* Footer link */
 .login-footer {
     text-align: center;
     margin-top: 24px;
