@@ -83,8 +83,10 @@ class Mysql_events(db.Model):
 class Alert_history(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     token = db.Column(db.String(50), db.ForeignKey('triggers.token'), nullable=False)
-    recipient_addr = db.Column(db.String(50), nullable=False)
-    delivery_status = db.Column(db.Enum('sent', 'failed'), default='sent')
+    bait_type = db.Column(db.String(20), nullable=False)
+    source_ip = db.Column(db.String(50), nullable=False)
+    event_time= db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.String(50), nullable=False)
 
     def __repr__(self):
         return f"<alert_history {self.id}>"

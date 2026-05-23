@@ -1,4 +1,4 @@
-from models import db, Users, Baits, Triggers, Alerts, Watcher_events, Mysql_events
+from models import db, Users, Baits, Triggers, Alerts, Watcher_events, Mysql_events, Alert_history
 
 from marshmallow import validate, validates, ValidationError
 
@@ -108,6 +108,20 @@ class Watcher_eventschema(SQLAlchemyAutoSchema):
         error="Invalid IP address format"
     ))
     event_time = auto_field(required=True)
+
+
+class Alert_historySchema(SQLAlchemyAutoSchema):  
+    class Meta:
+        model = Alert_history
+        load_instance = False # When Deserializing (Loading) Return Database Objects
+        sqla_session = db.session
+    
+    id = auto_field(required=True, load_only=True) # Not Displayed in Api Responses
+    token = auto_field(required=True)
+    bait_type = auto_field(required=True)
+    source_ip = auto_field(required=True)
+    event_time = auto_field(required=True, dump_only=True) # Not required in input, only displayed in  API output
+    user_id = auto_field(required=True, load_only=True) # Not displayed in API response
 
 
 class Mysql_eventschema(SQLAlchemyAutoSchema):  
