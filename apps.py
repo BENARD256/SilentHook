@@ -22,22 +22,10 @@ db.init_app(app) #initializing Db
 jwt = JWTManager(app) # Initializing JWT Manager
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Handle 404 Errors at app level
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 
 def register_blueprints():
@@ -69,4 +57,3 @@ register_blueprints() # Register Blueprints Ealier
 if __name__ == "__main__":
     test_db_connection()
     app.run(debug=True, host='0.0.0.0', reloader_type='stat')
-
