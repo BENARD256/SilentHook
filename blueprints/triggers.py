@@ -1,4 +1,4 @@
-from models import db, Triggers, Baits, Users, Alerts, Watcher_events
+from models import db, Triggers, Baits, Users, Alerts, Watcher_events, Alert_history
 from schemas import Triggerschema, ValidationError
 from utils import api_response
 
@@ -67,7 +67,6 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None, center_i
         'xlsx':       msoffice_bait,
         'pptx':       msoffice_bait,
         'pdf':        None,
-        'fim':        None,
         'mysql_dump': None
     }
     # MS OFFICE
@@ -89,6 +88,11 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None, center_i
         ]
         return [f"{callback_url}{path}?ref={token}" for path in DOMAIN_LURES]
     
+    # FIM
+    if bait_abbrv.lower() == "fim":
+        return "Folder Intergrity Monitoring File"
+    
+
     # Handles Untacked baits
     else:
         return "NOTHING BAIT MATCHED"
@@ -255,6 +259,10 @@ def delete_trigger(id=None): # user deleting a bait has to be the owner
 
     # Incase Bait Was FIM
     Watcher_events.query.filter_by(token=trigger.token).delete()  # (Clearing FK Relationships)
+
+    # Incase it was triggered a record in Alert_history has to be cleared first
+    Alert_history.query.filter_by(token=trigger.token).delete()
+
 
     # Future Tabes MySql 
     #MysqlEvents.query.filter_by(token=trigger.token).delete()
