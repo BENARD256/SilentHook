@@ -6,19 +6,87 @@
     <title>Dashboard - DBBD</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/static/css/dashboard/dashboard.css">
+    <link rel="icon" type="image/png" href="static/images/favicon.png">
 </head>
 
 <body>
 
     <nav>
         <a class="nav-brand" href="/dashboard">DB<span>BD</span></a>
+
+        <!-- Desktop links -->
         <ul class="nav-links">
             <li><a href="/dashboard" class="active">Dashboard</a></li>
             <li><a href="/triggers">My Baits</a></li>
-            <li><a href="/alerts">Alerts</a></li>
-            <li><a href="/docs">Docs</a></li>
+            <li><a href="/analytics">Analytics</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="#" class="nav-signout" id="desktop-signout">Sign Out</a></li>
         </ul>
+
+        <!-- Hamburger button (mobile only) -->
+        <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </nav>
+
+    <!-- Mobile drawer -->
+    <div class="nav-drawer" id="nav-drawer">
+        <a href="/dashboard" class="active">Dashboard</a>
+        <a href="/triggers">My Baits</a>
+        <a href="/analytics">Analytics</a>
+        <a href="/about">About</a>
+        <div class="drawer-divider"></div>
+        <a href="#" class="drawer-signout" id="mobile-signout">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Sign Out
+        </a>
+    </div>
+
+    <script>
+        // Hamburger toggle
+        const hamburger = document.getElementById('nav-hamburger');
+        const drawer    = document.getElementById('nav-drawer');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('open');
+            drawer.classList.toggle('open');
+        });
+
+        // Close drawer when a link inside is clicked
+        drawer.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('open');
+                drawer.classList.remove('open');
+            });
+        });
+
+        // Close drawer on outside click
+        document.addEventListener('click', (e) => {
+            if (!nav.contains(e.target) && !drawer.contains(e.target)) {
+                hamburger.classList.remove('open');
+                drawer.classList.remove('open');
+            }
+        });
+
+        // Sign out (pointed to null for now)
+        function handleSignOut(e) {
+            e.preventDefault();
+            // TODO: wire up real logout logic here
+            localStorage.removeItem('token');
+            window.location.href = '/auth/login';
+        }
+
+        document.getElementById('desktop-signout').addEventListener('click', handleSignOut);
+        document.getElementById('mobile-signout').addEventListener('click', handleSignOut);
+        
+    </script>
 
     <div class="page-wrapper">
 
@@ -453,7 +521,7 @@
 
         document.getElementById('search-input').addEventListener('input', applyFilters);
 
-        //Copy URL helper — HTTP + HTTPS
+        //Copy URL helper both HTTP + HTTPS
         function copyURL(btn, text) {
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(text).then(() => {
