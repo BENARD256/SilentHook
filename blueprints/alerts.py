@@ -1,4 +1,4 @@
-from models import db, Alerts, Triggers, Watcher_events # Db Schemas
+from models import db, Alerts, Triggers, Watcher_events, Alert_history # Db Schemas
 from schemas import Alertschema,Watcher_eventschema, ValidationError # Json Deserialization / Serialization
 from utils import api_response
 
@@ -32,7 +32,7 @@ def validate_token(token_id): # Before Triggering an Alert Verify if Token_id is
 
 
 @callback_bp.route("<string:token_id>/callback", methods=['GET']) # xlsx, docx, pdf, qrcode
-def msoffice_callback(token_id):
+def handler_callback(token_id):
     trigger_token = validate_token(token_id)
 
     if not trigger_token:
@@ -59,6 +59,17 @@ def msoffice_callback(token_id):
     
     # Refreshing Db Session
     db.session.refresh(alert) # Making Sure it Returns updated Results
+
+    # Alerts to Alerts_History
+    history = Alert_history(
+        token = trigger_token.token,
+        bait_type = trigger_token.bait.abbrev,
+        source_ip = source_ip,
+        user_id = trigger_token.user_id
+    )
+    # Alert_History DB Save
+    db.session.add(history)
+    db.session.commit()
 
     # SENDING EMAIL ALERTS
     bait_type = trigger_token.bait.abbrev if trigger_token.bait else "UNKNOWN"
@@ -106,6 +117,17 @@ def domain_callback():
     
     # Refreshing Db Session
     db.session.refresh(alert) # Making Sure it Returns updated Results
+
+    # Alerts to Alerts_History
+    history = Alert_history(
+        token = trigger_token.token,
+        bait_type = trigger_token.bait.abbrev,
+        source_ip = source_ip,
+        user_id = trigger_token.user_id
+    )
+    # Alert_History DB Save
+    db.session.add(history)
+    db.session.commit()
 
     # SENDING EMAIL ALERTS
     bait_type = trigger_token.bait.abbrev if trigger_token.bait else "UNKNOWN"
@@ -218,6 +240,17 @@ def fim_callback(token):
     db.session.add(watcher_event)
     db.session.commit()
     db.session.refresh(watcher_event)
+
+    # Alerts to Alerts_History
+    history = Alert_history(
+        token = trigger_token.token,
+        bait_type = trigger_token.bait.abbrev,
+        source_ip = request.remote_addr,
+        user_id = trigger_token.user_id
+    )
+    # Alert_History DB Save
+    db.session.add(history)
+    db.session.commit()
 
     # SENDING EMAIL ALERTS
 
