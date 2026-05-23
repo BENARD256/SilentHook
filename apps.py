@@ -7,6 +7,7 @@ from blueprints.baits import baits_bp # Baits Blueprint
 from blueprints.triggers import triggers_bp # Triggers Blueprint
 from blueprints.alerts import callback_bp, callback_domain_bp # Alerts (callback) Blueprint
 from blueprints import views # HTML Page Rendering 
+from blueprints.history import history_api_bp
 
 from flask import Flask, request, render_template, jsonify
 from flask_jwt_extended import JWTManager
@@ -50,6 +51,9 @@ def register_blueprints():
     app.register_blueprint(callback_domain_bp) # Registering DOMAIN callback Blueprint
 
     app.register_blueprint(views.views_bp) # Generale Blueprint for HTML Pages
+
+    app.register_blueprint(history_api_bp) # Alert History
+    
 
 def test_db_connection(): # Function to test DB connection
     try:
