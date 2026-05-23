@@ -5,8 +5,6 @@ from flask_jwt_extended import jwt_required # Require JWT to download bait
 from blueprints.auth import auth_bp
 from blueprints.triggers import triggers_bp
 
-#   Views Page Rendering
-#https://share.google/aimode/FwSnRw7tgrAZqYRHA
 
 
 # General Blueprint 
@@ -15,38 +13,40 @@ views_bp = Blueprint('views', __name__)
 
 # AUTHENTICATION
 
-@auth_bp.route('/register', methods=['GET', 'POST'])
+@auth_bp.route('/register', methods=['GET'])
+@views_bp.route('/register', methods=['GET'])
 def register():
     return render_template('/auth/register.html') # Flask auto checks in templates
 
 
 # Login / Index Page
 
-@auth_bp.route('/login',methods=['GET', 'POST'])
-@views_bp.route('/', methods=['GET', 'POST'])
+@auth_bp.route('/login',methods=['GET']) # /auth
+@views_bp.route('/', methods=['GET'])
+@views_bp.route('/login', methods=['GET'])
 def login():
     return render_template('/auth/login.html')
 
 
 # DASHBOARD
-@views_bp.route('/dashboard', methods=['GET', 'POST'])
+@views_bp.route('/dashboard', methods=['GET'])
 def dashboard():
     return render_template('/dashboard/dashboard.html')
 
 
 # User's Baits
 
-@views_bp.route("/triggers", methods=['GET', 'POST'])
+@views_bp.route("/triggers", methods=['GET'])
 def user_triggers():
     return render_template('/triggers/triggers.html')
 
-# Alerts Page
-@views_bp.route("/alerts", methods=['GET', 'POST'])
-def alerts():
-    return render_template('alerts/alerts.html')
+# Alert Analytics Page
+@views_bp.route("/analytics", methods=['GET'])
+def alert_history():
+    return render_template('history/analytics.html')
 
 # About Page
-@views_bp.route("/docs", methods=['GET', 'POST'])
+@views_bp.route("/about", methods=['GET'])
 def about():
     return render_template('/about/about.html')
 
