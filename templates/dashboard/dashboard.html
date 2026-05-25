@@ -13,8 +13,6 @@
 
     <nav>
         <a class="nav-brand" href="/dashboard">DB<span>BD</span></a>
-
-        <!-- Desktop links -->
         <ul class="nav-links">
             <li><a href="/dashboard" class="active">Dashboard</a></li>
             <li><a href="/triggers">My Baits</a></li>
@@ -22,8 +20,6 @@
             <li><a href="/about">About</a></li>
             <li><a href="#" class="nav-signout" id="desktop-signout">Sign Out</a></li>
         </ul>
-
-        <!-- Hamburger button (mobile only) -->
         <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle menu">
             <span></span>
             <span></span>
@@ -31,7 +27,6 @@
         </button>
     </nav>
 
-    <!-- Mobile drawer -->
     <div class="nav-drawer" id="nav-drawer">
         <a href="/dashboard" class="active">Dashboard</a>
         <a href="/triggers">My Baits</a>
@@ -50,7 +45,6 @@
     </div>
 
     <script>
-        // Hamburger toggle
         const hamburger = document.getElementById('nav-hamburger');
         const drawer    = document.getElementById('nav-drawer');
 
@@ -59,7 +53,6 @@
             drawer.classList.toggle('open');
         });
 
-        // Close drawer when a link inside is clicked
         drawer.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 hamburger.classList.remove('open');
@@ -67,25 +60,22 @@
             });
         });
 
-        // Close drawer on outside click
         document.addEventListener('click', (e) => {
+            const nav = document.querySelector('nav');
             if (!nav.contains(e.target) && !drawer.contains(e.target)) {
                 hamburger.classList.remove('open');
                 drawer.classList.remove('open');
             }
         });
 
-        // Sign out (pointed to null for now)
         function handleSignOut(e) {
             e.preventDefault();
-            // TODO: wire up real logout logic here
             localStorage.removeItem('token');
             window.location.href = '/auth/login';
         }
 
         document.getElementById('desktop-signout').addEventListener('click', handleSignOut);
         document.getElementById('mobile-signout').addEventListener('click', handleSignOut);
-        
     </script>
 
     <div class="page-wrapper">
@@ -125,7 +115,6 @@
     <div class="modal-overlay" id="deploy-modal">
         <div class="modal">
 
-            <!-- Image banner (top) -->
             <div class="modal-image" id="modal-image-wrap">
                 <img id="modal-img" src="" alt="" onerror="this.style.display='none';document.getElementById('modal-img-fallback').style.display='flex'">
                 <div class="modal-image-fallback" id="modal-img-fallback" style="display:none;">
@@ -137,14 +126,12 @@
                 <span class="modal-abbrev" id="modal-abbrev">—</span>
             </div>
 
-            <!-- X close button -->
             <button class="modal-close" id="modal-close" title="Close">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
                     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
             </button>
 
-            <!-- Body -->
             <div class="modal-body" id="modal-body">
                 <div class="modal-title" id="modal-title">—</div>
                 <div class="modal-desc" id="modal-desc">—</div>
@@ -155,11 +142,10 @@
                 <input class="field-input" id="modal-email" type="email"
                        placeholder="alerts@yourcompany.com">
                 <p class="field-hint">
-                    Leave blank to use your Account email. Alerts will be sent here when the bait is triggered.
+                    Defaults to your account email if left blank.
                 </p>
             </div>
 
-            <!-- Footer -->
             <div class="modal-footer">
                 <button class="btn-deploy" id="btn-deploy">Deploy Bait</button>
             </div>
@@ -168,9 +154,8 @@
     </div>
 
     <script>
-        //Stable refs
         let activeBaitId  = null;
-        let activeBaitObj = null; // track full bait object for abbrev checks
+        let activeBaitObj = null;
 
         const modal         = document.getElementById('deploy-modal');
         const modalImg      = document.getElementById('modal-img');
@@ -179,16 +164,16 @@
         const modalBody     = document.getElementById('modal-body');
         const btnDeploy     = document.getElementById('btn-deploy');
 
-        // Always re-query after innerHTML reset
-        const getReminder = () => document.getElementById('modal-reminder');
-        const getEmail    = () => document.getElementById('modal-email');
-        const getTitle    = () => document.getElementById('modal-title');
-        const getDesc     = () => document.getElementById('modal-desc');
-        const getQRImage  = () => document.getElementById('modal-qr-image');
+        const getReminder  = () => document.getElementById('modal-reminder');
+        const getEmail     = () => document.getElementById('modal-email');
+        const getTitle     = () => document.getElementById('modal-title');
+        const getDesc      = () => document.getElementById('modal-desc');
+        const getQRImage   = () => document.getElementById('modal-qr-image');
+        const getFIMPath   = () => document.getElementById('modal-monitored-path');
 
-        // ── Default modal body ──
         function resetModalBody(abbrev) {
-            const isQR = abbrev === 'QR';
+            const isQR  = abbrev === 'QR';
+            const isFIM = abbrev === 'FIM';
 
             modalBody.innerHTML = `
                 <div class="modal-title" id="modal-title">—</div>
@@ -197,11 +182,19 @@
                 <input class="field-input" id="modal-reminder" type="text" placeholder="e.g. Finance folder bait on DC01">
                 <label class="field-label" for="modal-email">Alert Email <span style="color:var(--muted);font-size:0.65rem;text-transform:none;letter-spacing:0;">(optional)</span></label>
                 <input class="field-input" id="modal-email" type="email" placeholder="alerts@yourcompany.com">
-                <p class="field-hint">Leave blank to use your Account email. Alerts will be sent here when the bait is triggered.</p>
+                <p class="field-hint">Defaults to your account email if left blank.</p>
+                ${isFIM ? `
+                <label class="field-label" for="modal-monitored-path" style="margin-top:12px;">
+                    Folder to Monitor
+                    <span style="color:var(--muted);font-size:0.65rem;text-transform:none;letter-spacing:0;">(Windows path)</span>
+                </label>
+                <input class="field-input" id="modal-monitored-path" type="text"
+                       placeholder="e.g. C:\\Users\\Finance\\Sensitive">
+                ` : ''}
                 ${isQR ? `
                 <label class="field-label" for="modal-qr-image" style="margin-top:12px;">
-                    Center Logo
-                    <span style="color:var(--muted);font-size:0.65rem;text-transform:none;letter-spacing:0;">(optional PNG/JPG)</span>
+                    EMBED Logo
+                    <span style="color:var(--muted);font-size:0.50rem;text-transform:none;letter-spacing:0;">(optional PNG/JPG)</span>
                 </label>
                 <div class="qr-upload-wrap" id="qr-upload-wrap">
                     <input type="file" id="modal-qr-image" accept="image/png,image/jpeg,image/webp,image/gif"
@@ -216,11 +209,9 @@
                     </button>
                     <span class="qr-file-name" id="qr-file-name">No file chosen</span>
                 </div>
-                <p class="field-hint">Upload a logo to embed in the center of the QR code. Leave blank to use the default icon.</p>
                 ` : ''}
             `;
 
-            // Wire up QR file input button
             if (isQR) {
                 document.getElementById('qr-upload-btn').addEventListener('click', () => {
                     document.getElementById('modal-qr-image').click();
@@ -270,10 +261,9 @@
         document.getElementById('modal-close').addEventListener('click', closeModal);
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-        // Deploy button
         btnDeploy.addEventListener('click', async () => {
             if (!activeBaitId) return;
-            if (btnDeploy.onclick) return; // DOMAIN close handler active
+            if (btnDeploy.onclick) return;
 
             const token = localStorage.getItem('token');
             if (!token) { window.location.href = '/auth/login'; return; }
@@ -293,10 +283,20 @@
                 return;
             }
 
+            // Validate monitored path for FIM
+            if (abbrev === 'FIM') {
+                const pathEl = getFIMPath();
+                if (!pathEl || !pathEl.value.trim()) {
+                    pathEl.focus();
+                    pathEl.style.borderColor = 'var(--danger)';
+                    setTimeout(() => pathEl.style.borderColor = '', 1500);
+                    return;
+                }
+            }
+
             btnDeploy.disabled    = true;
             btnDeploy.textContent = 'Deploying…';
 
-            // ── Build request — FormData for QR, JSON for everything else ──
             let fetchOptions;
 
             if (abbrev === 'QR') {
@@ -310,12 +310,20 @@
                 fetchOptions = {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
-                    // NO Content-Type — browser sets multipart boundary automatically
                     body: formData
                 };
             } else {
                 const payload = { reminder };
                 if (email) payload.callback_email = email;
+
+                // FIM — add monitored path with backslash escaping
+                if (abbrev === 'FIM') {
+                    const pathEl = getFIMPath();
+                    if (pathEl && pathEl.value.trim()) {
+                        payload.monitored_path = pathEl.value.trim().replace(/\\/g, '\\\\');
+                    }
+                }
+
                 fetchOptions = {
                     method: 'POST',
                     headers: {
@@ -436,7 +444,6 @@
             }
         });
 
-        //Fallback icons
         const FALLBACK_ICON = `
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.3;color:var(--muted)">
@@ -455,7 +462,6 @@
         let allBaits     = [];
         let activeFilter = 'all';
 
-        // Bait grid rendering
         function renderGrid(baits) {
             const grid = document.getElementById('bait-grid');
             grid.innerHTML = '';
@@ -497,7 +503,6 @@
             });
         }
 
-        // Filtering
         function applyFilters() {
             const query = document.getElementById('search-input').value.toLowerCase().trim();
             let filtered = allBaits;
@@ -521,7 +526,6 @@
 
         document.getElementById('search-input').addEventListener('input', applyFilters);
 
-        //Copy URL helper both HTTP + HTTPS
         function copyURL(btn, text) {
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(text).then(() => {
@@ -547,7 +551,6 @@
             }
         }
 
-        //Load baits from API
         async function loadBaits() {
             const token = localStorage.getItem('token');
             if (!token) { window.location.href = '/auth/login'; return; }
