@@ -32,9 +32,9 @@ Register-ObjectEvent -InputObject $Watcher -EventName EventRecordWritten -Action
 
 
 		# Production - injected by deploy.ps1
-        if ($object -notlike "*FOLDER_NAME*") { return }
+        if ($object -notlike "*FOLDER_NAME*") { return } # Grab Audit logs matching the folder 
 
-        # Deduplicate via file on disk - one alert per unique combination
+        # De-duplicate via file on disk - one alert per unique combination
         $key       = "$user|$object|$access|$time"
         $dedupFile = "C:\watcher\seen.log"
         $already   = Get-Content $dedupFile -ErrorAction SilentlyContinue
