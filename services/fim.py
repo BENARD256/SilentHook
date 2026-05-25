@@ -1,4 +1,3 @@
-#from __future__ import absolute_import
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 
@@ -8,7 +7,7 @@ URL_PLACEHOLDER = b"CALLBACK_URL"
 MONITORED_PATH  = b"MONITORED_PATH"
 
 DOWNLOADS_DIR = Path("static/downloads") # Where Final Zip is saved
-
+DEFAULT_DIR = "C:\Program Files (x86)\critical"
 
 def make_bait(callback_token : str, callback_url: str, monitored_path: str,  template_dir: Path) -> str:
     data = Path(template_dir / "deploy.ps1").read_bytes()
@@ -26,7 +25,10 @@ def make_bait(callback_token : str, callback_url: str, monitored_path: str,  tem
     return out_path # static/baits/fim/tmp
 
 
-def fim_bait(callback_token: str, callback_url: str, template_dir: Path, monitored_path: str):
+def fim_bait(callback_token: str, callback_url: str, template_dir: Path, monitored_path: str = DEFAULT_DIR):
+    if monitored_path is None:
+        monitored_path = DEFAULT_DIR
+
     template_dir = Path(template_dir) # Converts path to PosixPath Object
 
     deploy_injected = make_bait( callback_token=callback_token, callback_url=callback_url, monitored_path=monitored_path, template_dir=template_dir)

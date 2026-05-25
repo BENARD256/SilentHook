@@ -8,6 +8,7 @@
 #
 # Installation Path By default script is hidden:
 #	"C:\watcher\"
+# Installed as <tokenId>.ps1	
 #
 # Uninstall:
 # 	attrib -h -s “c:\watcher\*”
