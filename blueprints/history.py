@@ -24,9 +24,12 @@ def get_stats():
     # All Deployed
     total_deployed = Triggers.query.filter_by(user_id=user_id).count()
 
-    # All baits Fired
-    total_triggered = Alert_history.query.filter_by(user_id=user_id).count()
-
+    # All baits Fired Filtere uniquely by token
+    #total_triggered = Alert_history.query.filter_by(user_id=user_id).count() # Return Total Alerts Fired
+    total_triggered = db.session.query(
+        func.count(func.distinct(Alert_history.token))
+    ).filter(Alert_history.user_id == user_id).scalar()
+    
     not_triggered = total_deployed - total_triggered
 
     # How Often @ Bait Type is Triggered.
