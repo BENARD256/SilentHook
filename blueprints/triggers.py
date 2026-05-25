@@ -15,6 +15,7 @@ from flask import current_app # accessing BASE CALLBACK_URL
 
 from services.msoffice import msoffice_bait # Generates office baits
 from services.qrcode import qr_bait         # GenerateS Qr Code bait
+from services.fim import fim_bait           # Generates Fim Bait
 
 """
 User Provides
@@ -48,7 +49,7 @@ def generate_token(): # Generates a Longer Token
 
 
 # Function to Generate the Bait File. After Storing in the Db pull baits.bait_path
-def generate_bait_file(token=None, bait_abbrv=None, template_path=None, center_image=None): 
+def generate_bait_file(token=None, bait_abbrv=None, template_path=None, center_image=None, monitored_path=None): 
 
     # Base Callback_url
     callback_url = current_app.config['CALLBACK_URL'] # Accessing url from config.py
@@ -71,7 +72,7 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None, center_i
     }
     # MS OFFICE
     if bait_abbrv.lower() in office_baits:
-        return office_baits[bait_abbrv.lower()](CALLBACK_URL=callback_url_get, TEMPLATE=template_path, TOKEN=token) # Returns static/downloads/7035ae6f-7b19-4f94-a1c3-bb7f3ff51973.xlsx
+        return office_baits[bait_abbrv.lower()](CALLBACK_URL=callback_url_get, TEMPLATE=template_path, TOKEN=token) # Returns only filename static/downloads/7035ae6f-7b19-4f94-a1c3-bb7f3ff51973.xlsx
 
 
     # QR CODE
@@ -90,8 +91,8 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None, center_i
     
     # FIM
     if bait_abbrv.lower() == "fim":
-        return "Folder Intergrity Monitoring File"
-    
+        callback_url_fim = f"{callback_url}/token/{token}/fim"
+        return fim_bait(callback_token=token, callback_url=callback_url_fim, template_dir=template_path, monitored_path=monitored_path)     
 
     # Handles Untacked baits
     else:
@@ -116,7 +117,9 @@ def create_trigger(bait_id=None):
         trigger_data = {'reminder': request.form.get('reminder'),  'callback_email': request.form.get('callback_email')}
     else:    
         trigger_data = request.json
-     
+        # Pull Monitored_Path for Fim Module, Pop it from the request before Validation of Json Data
+        monitored_path = trigger_data.pop('monitored_path', None)
+
     # Sanization & JSON Deserialization.
     try:
         trigger_data = trigger_schema.load(trigger_data, partial=True)  # Validation & Deserialize  of email, reminder to Dict not Database object 
@@ -164,7 +167,7 @@ def create_trigger(bait_id=None):
             center_image_path = f'static/tmp/{trigger_data.token}_center.{ext}'
             file.save(center_image_path)
 
-    
+
     # Bait Generation
 
     # bait_gen_data = Triggers.query.filter_by(token=trigger_data.token).first() # Filtering by the newly generated Token ID trigger_data.token
@@ -181,7 +184,7 @@ def create_trigger(bait_id=None):
     bait_abbrv = bait_exists.abbrev
     template_path  = bait_exists.bait_path
     
-    bait_output = generate_bait_file(token=trigger_data.token, bait_abbrv=bait_abbrv, template_path=template_path, center_image=center_image_path) # Returns BAIT FILE
+    bait_output = generate_bait_file(token=trigger_data.token, bait_abbrv=bait_abbrv, template_path=template_path, center_image=center_image_path, monitored_path=monitored_path)# Returns BAIT FILE
 
     print("Bait Output: is: ", bait_output)
 
