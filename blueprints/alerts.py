@@ -31,8 +31,12 @@ def validate_token(token_id): # Before Triggering an Alert Verify if Token_id is
     return Triggers.query.filter_by(token=token_id).first()
 
 
-@callback_bp.route("<string:token_id>/callback", methods=['GET']) # xlsx, docx, pdf, qrcode
+@callback_bp.route("<string:token_id>/callback", methods=['GET', 'HEAD', 'OPTIONS']) # xlsx, docx, pdf, qrcode
 def handler_callback(token_id):
+     # Ignoring preflight and HEAD requests
+    if request.method in ['OPTIONS', 'HEAD']:
+        return '', 200
+    
     trigger_token = validate_token(token_id)
 
     if not trigger_token:
