@@ -16,6 +16,7 @@ from flask import current_app # accessing BASE CALLBACK_URL
 from services.msoffice import msoffice_bait # Generates office baits
 from services.qrcode import qr_bait         # GenerateS Qr Code bait
 from services.fim import fim_bait           # Generates Fim Bait
+from services.pdfbait import pdf_bait       # Generates PDF Bait
 
 """
 User Provides
@@ -67,7 +68,6 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None, center_i
         'docx':       msoffice_bait,
         'xlsx':       msoffice_bait,
         'pptx':       msoffice_bait,
-        'pdf':        None,
         'mysql_dump': None
     }
     # MS OFFICE
@@ -94,6 +94,13 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None, center_i
         callback_url_fim = f"{callback_url}/token/{token}/fim"
         return fim_bait(callback_token=token, callback_url=callback_url_fim, template_dir=template_path, monitored_path=monitored_path)     
 
+    # PDF
+    if bait_abbrv.lower() == 'pdf':
+        try:
+            return pdf_bait(CALLBACK_URL=callback_url_get, TEMPLATE=template_path, TOKEN=token)
+        except Exception as e:
+            return pdf_bait(CALLBACK_URL=callback_url_get, TEMPLATE=template_path, TOKEN=token)
+    
     # Handles Untacked baits
     else:
         return "NOTHING BAIT MATCHED"
@@ -112,6 +119,9 @@ def create_trigger(bait_id=None):
             code=404
         )
 
+    # Initializing
+    monitored_path = None
+    
     # Detect QR with Image
     if request.content_type and 'multipart/form-data' in request.content_type:
         trigger_data = {'reminder': request.form.get('reminder'),  'callback_email': request.form.get('callback_email')}
