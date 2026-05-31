@@ -47,7 +47,7 @@ def handler_callback(token_id):
 
 
     # Bulding Alert
-    source_ip = request.remote_addr # Source IP
+    source_ip = request.headers.get('X-Forwarded-For', request.remote_addr) # Source Ip
     user_agent = request.headers.get('User-Agent', "Unknow")
 
     alert = Alerts(
