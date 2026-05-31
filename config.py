@@ -18,8 +18,10 @@ class Config:
 
     # Call_Back_Url
     #CALLBACK_URL = os.environ.get('CALLBACK_URL', 'http://127.0.0.1:5000')
-    CALLBACK_URL = 'http://dbbd.com:5000' # DEFINE AN IP MAPPING IN /etc/hosts to resolve domain
-    
+    #CALLBACK_URL  = "http://192.168.100.10:5000"
+    #CALLBACK_URL = "http://dbbd-61716.portmap.host:61716"
+    CALLBACK_URL = "http://192.168.100.10:5000"
+    MYSQL_PORT = 3308 # Required for running a Decoy Sql Server
 
 class DevelopmentConfig(Config):
     DEBUG = True
