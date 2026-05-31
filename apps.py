@@ -11,7 +11,8 @@ from blueprints.history import history_api_bp
 
 from flask import Flask, request, render_template, jsonify
 from flask_jwt_extended import JWTManager
-
+from services.mysql.mysql_listener import start_mysql_listener # Starts Decoy Mysql Server for incoming alert
+from flask import current_app
 
 app = Flask(__name__)
 
@@ -56,4 +57,5 @@ register_blueprints() # Register Blueprints Ealier
 
 if __name__ == "__main__":
     test_db_connection()
+    start_mysql_listener(app, port=app.config['MYSQL_PORT']) # Starting Decoy Mysql Server
     app.run(debug=True, host='0.0.0.0', reloader_type='stat')
