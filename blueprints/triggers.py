@@ -6,7 +6,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import uuid # For Generating Unique Token IDs
 import hashlib #
-
+from urllib.parse import urlparse # Extracting Base URL / Hostname
 import os
 from flask import current_app # accessing BASE CALLBACK_URL
 
@@ -17,6 +17,7 @@ from services.msoffice import msoffice_bait # Generates office baits
 from services.qrcode import qr_bait         # GenerateS Qr Code bait
 from services.fim import fim_bait           # Generates Fim Bait
 from services.pdfbait import pdf_bait       # Generates PDF Bait
+from services.mysql_bait import sql_bait    # Generates Sql Bait
 
 """
 User Provides
@@ -67,8 +68,7 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None, center_i
     office_baits = {
         'docx':       msoffice_bait,
         'xlsx':       msoffice_bait,
-        'pptx':       msoffice_bait,
-        'mysql_dump': None
+        'pptx':       msoffice_bait
     }
     # MS OFFICE
     if bait_abbrv.lower() in office_baits:
@@ -100,6 +100,13 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None, center_i
             return pdf_bait(CALLBACK_URL=callback_url_get, TEMPLATE=template_path, TOKEN=token)
         except Exception as e:
             return pdf_bait(CALLBACK_URL=callback_url_get, TEMPLATE=template_path, TOKEN=token)
+    
+    # Mysql Dump
+    if bait_abbrv.lower() == 'mysql_dump':
+        parsed = urlparse(callback_url)
+        host   = parsed.hostname
+        port =  current_app.config['MYSQL_PORT']
+        return sql_bait(token=token, callback_host=host, port=port, template_path=template_path)
     
     # Handles Untacked baits
     else:
@@ -275,10 +282,6 @@ def delete_trigger(id=None): # user deleting a bait has to be the owner
 
     # Incase it was triggered a record in Alert_history has to be cleared first
     Alert_history.query.filter_by(token=trigger.token).delete()
-
-
-    # Future Tabes MySql 
-    #MysqlEvents.query.filter_by(token=trigger.token).delete()
 
     db.session.delete(trigger)
     db.session.commit()
