@@ -1,10 +1,10 @@
-from flask import render_template, Blueprint, send_from_directory
+from flask import render_template, Blueprint, send_from_directory, after_this_request # Delete Bait After its Served
 
 from flask_jwt_extended import jwt_required # Require JWT to download bait
 
 from blueprints.auth import auth_bp
 from blueprints.triggers import triggers_bp
-
+import os
 
 
 # General Blueprint 
@@ -55,4 +55,17 @@ def about():
 @views_bp.route('/downloads/<filename>')
 @jwt_required()  # only logged-in users can download bait
 def download_bait(filename):
+
+    @after_this_request
+    def delete_file(response):
+        try:
+            os.unlink(os.path.join('static/downloads', filename))
+            #print(f"[+] Cleaned Up {filename}")
+        
+        except Exception as e:
+            #print(f'[+] Cleanup Failed {e}')
+            return ""
+        
+        return response
+    
     return send_from_directory('static/downloads', filename, as_attachment=True)
