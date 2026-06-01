@@ -19,6 +19,7 @@ def make_bait(callback_token : str, callback_url: str, monitored_path: str,  tem
     
     # WRITING CHANGES
     TEMP_DIR = template_dir / "tmp"
+    TEMP_DIR.mkdir(parents=True, exist_ok=True)
     out_path = TEMP_DIR / f"deploy_{callback_token}.ps1"
     out_path.write_bytes(data)
     

@@ -10,6 +10,7 @@ from pathlib import Path
 DATA          = "http://192.168.100.10/callback"
 LOGO_PATH     = "default.jpg"          # set to None for logoless QR
 DOWNLOADS_DIR = Path("static/downloads")
+DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT        = "bait_card.png"
 
 CARD_W    = 900

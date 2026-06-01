@@ -5,6 +5,9 @@ from zipfile import ZipFile, ZIP_DEFLATED
 DOWNLOADS_DIR = Path("static/downloads")
 TEMP_DIR      = Path("static/baits/mysql/tmp")
 
+DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
+TEMP_DIR.mkdir(parents=True, exist_ok=True)
+
 def mysql_dump_bait(token: str, callback_host: str, port: int,  template: Path):
 
     host = callback_host

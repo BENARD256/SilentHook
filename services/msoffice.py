@@ -10,6 +10,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 URL_PLACEHOLDER = b"CALLBACK_URL" # in the Template
 
 DOWNLOADS_DIR = Path("static/downloads")
+DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 CREATED_TS_PLACEHOLDER = b"aaaaaaaaaaaaaaaaaaaa"
