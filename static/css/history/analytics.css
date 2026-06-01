@@ -17,7 +17,10 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body {
+html {
+    /* Prevent iOS auto-zoom on input focus and page load */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
     overflow-x: hidden;
     width: 100%;
 }
@@ -27,6 +30,10 @@ body {
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
+    /* Prevent rubber-band horizontal scroll on iOS */
+    overscroll-behavior-x: none;
 }
 
 /* Nav */
@@ -279,6 +286,13 @@ nav {
 .chart-card.full { width: 100%; }
 .chart-card.wide { flex: 1; }
 
+/* Ensure chart containers always have a defined height so ApexCharts
+   can measure them correctly on first render */
+.chart-container {
+    min-height: 40px;
+    width: 100%;
+}
+
 .chart-title {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.7rem;
@@ -365,7 +379,8 @@ nav {
 
 .search-input {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.78rem;
+    /* 16px minimum prevents iOS auto-zoom on focus */
+    font-size: 16px;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 4px;
@@ -375,6 +390,8 @@ nav {
     max-width: 100%;
     outline: none;
     transition: border-color 0.2s;
+    /* Scale down visually without triggering zoom */
+    transform-origin: left center;
 }
 .search-input::placeholder { color: var(--muted); }
 .search-input:focus { border-color: var(--accent); }
@@ -482,8 +499,9 @@ nav {
 .bait-PPTX   { background: rgba(255,166,87,0.12); color: #ffa657; border: 1px solid rgba(255,166,87,0.3); }
 .bait-PDF    { background: rgba(248,81,73,0.12);  color: #f85149; border: 1px solid rgba(248,81,73,0.3); }
 .bait-QR     { background: rgba(188,140,255,0.12);color: #bc8cff; border: 1px solid rgba(188,140,255,0.3); }
+.bait-FIM    { background: rgba(56,189,248,0.12); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); }
 
-.bait-badge:not([class*="bait-DOMAIN"]):not([class*="bait-DOCX"]):not([class*="bait-XLSX"]):not([class*="bait-PPTX"]):not([class*="bait-PDF"]):not([class*="bait-QR"]) {
+.bait-badge:not([class*="bait-DOMAIN"]):not([class*="bait-DOCX"]):not([class*="bait-XLSX"]):not([class*="bait-PPTX"]):not([class*="bait-PDF"]):not([class*="bait-QR"]):not([class*="bait-FIM"]) {
     background: rgba(139,148,158,0.12);
     color: var(--muted);
     border: 1px solid var(--border);
@@ -496,10 +514,11 @@ nav {
     font-size: 0.85rem;
 }
 
-/* Pagination */
+/* Pagination — compact with ellipsis */
 .pagination {
     display: flex;
-    gap: 6px;
+    align-items: center;
+    gap: 4px;
     justify-content: flex-end;
     margin-top: 14px;
     flex-wrap: wrap;
@@ -515,12 +534,32 @@ nav {
     padding: 5px 10px;
     cursor: pointer;
     transition: all 0.15s;
+    min-width: 32px;
+    text-align: center;
+    line-height: 1;
 }
-.pg-btn:hover { border-color: var(--accent); color: var(--accent); }
+.pg-btn:hover:not(.disabled) { border-color: var(--accent); color: var(--accent); }
 .pg-btn.active {
     background: var(--accent);
     border-color: var(--accent);
     color: #fff;
+}
+.pg-btn.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.pg-btn.pg-arrow {
+    font-size: 1rem;
+    padding: 3px 10px;
+}
+
+.pg-ellipsis {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    padding: 5px 4px;
+    user-select: none;
 }
 
 /* Spinner */
@@ -568,4 +607,8 @@ nav {
     .chart-card { padding: 16px; }
     .search-input { width: 100%; }
     .alerts-controls { flex-direction: column; align-items: flex-start; }
+
+    /* Tighter pagination on small screens */
+    .pagination { justify-content: center; }
+    .pg-btn { padding: 5px 8px; min-width: 28px; font-size: 0.7rem; }
 }

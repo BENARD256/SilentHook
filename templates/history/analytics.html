@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DBBD Analytics</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -73,18 +73,18 @@
     <div class="charts-row">
         <div class="chart-card">
             <div class="chart-title">Deployment Status</div>
-            <div id="donut-chart"></div>
+            <div id="donut-chart" class="chart-container"></div>
         </div>
         <div class="chart-card wide">
             <div class="chart-title">Triggers by Bait Type</div>
-            <div id="bar-chart"></div>
+            <div id="bar-chart" class="chart-container"></div>
         </div>
     </div>
 
     <!-- Row: Line chart full width -->
     <div class="chart-card full">
         <div class="chart-title">Trigger Activity Over Time</div>
-        <div id="line-chart"></div>
+        <div id="line-chart" class="chart-container"></div>
     </div>
 
     <!-- Row: Top IPs + Alerts Table -->
@@ -131,6 +131,10 @@
     let filteredAlerts = [];
     let currentPage = 1;
 
+    // Pending chart data — stored if DOM not ready yet
+    let pendingStats = null;
+    let chartsRendered = false;
+
     // Nav hamburger
     const hamburger = document.getElementById('nav-hamburger');
     const drawer    = document.getElementById('nav-drawer');
@@ -164,6 +168,28 @@
     document.getElementById('desktop-signout').addEventListener('click', handleSignOut);
     document.getElementById('mobile-signout').addEventListener('click', handleSignOut);
 
+    // Chart rendering with retry logic
+    // Waits until a DOM element has a non-zero width before rendering a chart.
+    // This prevents the blank-chart bug caused by ApexCharts rendering into
+    // invisible / zero-width containers (common on first page load).
+    function renderWhenVisible(elementId, renderFn, retries = 20, delay = 100) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+
+        const tryRender = (attempt) => {
+            const width = el.getBoundingClientRect().width;
+            if (width > 0) {
+                renderFn(el);
+            } else if (attempt < retries) {
+                setTimeout(() => tryRender(attempt + 1), delay);
+            } else {
+                console.warn(`[DBBD] Chart container #${elementId} never became visible after ${retries} retries.`);
+            }
+        };
+
+        tryRender(0);
+    }
+
     // Fetch & Bootstrap
     async function fetchStats() {
         const token = localStorage.getItem('token');
@@ -176,7 +202,9 @@
             if (res.status === 401) { window.location.href = '/auth/login?next=/analytics'; return; }
             const { data } = await res.json();
             renderStats(data);
-        } catch (e) { console.error('Stats fetch error:', e); }
+        } catch (e) {
+            console.error('Stats fetch error:', e);
+        }
     }
 
     async function fetchAlerts() {
@@ -192,10 +220,12 @@
             allAlerts = data.all_alerts || [];
             filteredAlerts = [...allAlerts];
             renderAlertsTable();
-        } catch (e) { console.error('Alerts fetch error:', e); }
+        } catch (e) {
+            console.error('Alerts fetch error:', e);
+        }
     }
 
-    // Stat Cards
+    //  Stat Cards 
     function renderStats(d) {
         animateCount('val-deployed', d.total_deployed);
         animateCount('val-triggered', d.total_triggred);
@@ -206,14 +236,17 @@
                 'Last: ' + new Date(d.last_activity).toLocaleString();
         }
 
-        renderDonut(d.total_triggred, d.not_triggered);
-        renderBar(d.bait_frequency || []);
-        renderLine(d.triggers_overtime || []);
+        // Use renderWhenVisible so charts only render once container has width
+        renderWhenVisible('donut-chart', () => renderDonut(d.total_triggred, d.not_triggered));
+        renderWhenVisible('bar-chart',   () => renderBar(d.bait_frequency || []));
+        renderWhenVisible('line-chart',  () => renderLine(d.triggers_overtime || []));
+
         renderIPTable(d.top_source_ips || []);
     }
 
     function animateCount(id, target) {
         const el = document.getElementById(id);
+        if (!el || !target) { if (el) el.textContent = target || 0; return; }
         let start = 0;
         const step = Math.ceil(target / 30);
         const timer = setInterval(() => {
@@ -226,7 +259,13 @@
     // Donut Chart
     function renderDonut(triggered, notTriggered) {
         new ApexCharts(document.getElementById('donut-chart'), {
-            chart: { type: 'donut', height: 280, background: 'transparent', animations: { speed: 800 } },
+            chart: {
+                type: 'donut',
+                height: 280,
+                background: 'transparent',
+                animations: { speed: 800 },
+                redrawOnWindowResize: true
+            },
             series: [triggered, notTriggered],
             labels: ['Triggered', 'Not Triggered'],
             colors: ['#f97316', '#21262d'],
@@ -261,13 +300,19 @@
         }).render();
     }
 
-    // Bar Chart
+    //Bar Chart
     function renderBar(breakdown) {
         const categories = breakdown.map(b => b.bait_type);
         const values     = breakdown.map(b => b.count);
 
         new ApexCharts(document.getElementById('bar-chart'), {
-            chart: { type: 'bar', height: 280, background: 'transparent', toolbar: { show: false } },
+            chart: {
+                type: 'bar',
+                height: 280,
+                background: 'transparent',
+                toolbar: { show: false },
+                redrawOnWindowResize: true
+            },
             series: [{ name: 'Triggers', data: values }],
             xaxis: {
                 categories,
@@ -291,7 +336,14 @@
         const counts = overtime.map(o => o.count);
 
         new ApexCharts(document.getElementById('line-chart'), {
-            chart: { type: 'area', height: 220, background: 'transparent', toolbar: { show: false }, animations: { speed: 900 } },
+            chart: {
+                type: 'area',
+                height: 220,
+                background: 'transparent',
+                toolbar: { show: false },
+                animations: { speed: 900 },
+                redrawOnWindowResize: true
+            },
             series: [{ name: 'Triggers', data: counts }],
             xaxis: {
                 categories: dates,
@@ -367,21 +419,57 @@
         renderPagination();
     }
 
+    // Compact Pagination with ellipsis
     function renderPagination() {
         const total = Math.ceil(filteredAlerts.length / PAGE_SIZE);
         const pg    = document.getElementById('pagination');
         if (total <= 1) { pg.innerHTML = ''; return; }
 
-        let html = '';
-        for (let i = 1; i <= total; i++) {
-            html += `<button class="pg-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+        // Build page number list with ellipsis
+        function getPages(current, total) {
+            const pages = [];
+            if (total <= 7) {
+                for (let i = 1; i <= total; i++) pages.push(i);
+                return pages;
+            }
+            pages.push(1);
+            if (current > 3) pages.push('...');
+            for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+                pages.push(i);
+            }
+            if (current < total - 2) pages.push('...');
+            pages.push(total);
+            return pages;
         }
+
+        const pages = getPages(currentPage, total);
+        let html = '';
+
+        // Prev button
+        html += `<button class="pg-btn pg-arrow ${currentPage === 1 ? 'disabled' : ''}" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>‹</button>`;
+
+        pages.forEach(p => {
+            if (p === '...') {
+                html += `<span class="pg-ellipsis">…</span>`;
+            } else {
+                html += `<button class="pg-btn ${p === currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
+            }
+        });
+
+        // Next button
+        html += `<button class="pg-btn pg-arrow ${currentPage === total ? 'disabled' : ''}" data-page="${currentPage + 1}" ${currentPage === total ? 'disabled' : ''}>›</button>`;
+
         pg.innerHTML = html;
 
-        pg.querySelectorAll('.pg-btn').forEach(btn => {
+        pg.querySelectorAll('.pg-btn:not(.disabled)').forEach(btn => {
             btn.addEventListener('click', () => {
-                currentPage = parseInt(btn.dataset.page);
-                renderAlertsTable();
+                const page = parseInt(btn.dataset.page);
+                if (!isNaN(page) && page !== currentPage) {
+                    currentPage = page;
+                    renderAlertsTable();
+                    // Scroll alerts into view smoothly on mobile
+                    document.querySelector('.alerts-table-wrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
             });
         });
     }
@@ -399,10 +487,14 @@
     });
 
     // Init
-    window.onload = () => {
-        fetchStats();
-        fetchAlerts();
-    };
+    // Use DOMContentLoaded + a short rAF to guarantee layout is complete
+    // before any chart tries to measure its container width.
+    document.addEventListener('DOMContentLoaded', () => {
+        requestAnimationFrame(() => {
+            fetchStats();
+            fetchAlerts();
+        });
+    });
 </script>
 </body>
 </html>
