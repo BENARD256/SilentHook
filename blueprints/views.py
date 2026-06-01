@@ -64,7 +64,7 @@ def download_bait(filename):
         
         except Exception as e:
             #print(f'[+] Cleanup Failed {e}')
-            return ""
+            pass
         
         return response
     
