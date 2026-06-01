@@ -1,4 +1,4 @@
-from models import db, Users, Baits, Triggers, Alerts, Watcher_events, Mysql_events, Alert_history
+from models import db, Users, Baits, Triggers, Alerts, Watcher_events, Alert_history
 
 from marshmallow import validate, validates, ValidationError
 
@@ -122,9 +122,3 @@ class Alert_historySchema(SQLAlchemyAutoSchema):
     source_ip = auto_field(required=True)
     event_time = auto_field(required=True, dump_only=True) # Not required in input, only displayed in  API output
     user_id = auto_field(required=True, load_only=True) # Not displayed in API response
-
-
-class Mysql_eventschema(SQLAlchemyAutoSchema):  
-    class Meta:
-        model = Mysql_events
-        load_instance = True
