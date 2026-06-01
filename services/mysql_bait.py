@@ -26,7 +26,7 @@ SET @bb = CONCAT(
 PREPARE stmt FROM @bb;
 EXECUTE stmt;
 START SLAVE;
-STOP SLAVE;
+--STOP SLAVE;
 """
     with open(template, 'r', encoding='utf-8', errors='ignore') as f:
         content = f.read()
