@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>My Baits - DBBD</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/static/css/triggers/triggers.css">
@@ -11,7 +11,6 @@
 
 <body>
 
-    <!-- Nav -->
     <nav>
         <a class="nav-brand" href="/dashboard">DB<span>BD</span></a>
         <ul class="nav-links">
@@ -26,7 +25,6 @@
         </button>
     </nav>
 
-    <!-- Mobile drawer -->
     <div class="nav-drawer" id="nav-drawer">
         <a href="/dashboard">Dashboard</a>
         <a href="/triggers" class="active">My Baits</a>
@@ -51,6 +49,13 @@
             <span class="badge" id="count-badge">— baits</span>
         </header>
 
+        <div class="search-bar-wrap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="trigger-search" class="search-input" placeholder="Search token, email, reminder or date…">
+        </div>
+
         <div class="table-card">
             <table id="trigger-table">
                 <thead>
@@ -73,12 +78,10 @@
             </table>
         </div>
 
-        <!-- Pagination -->
         <div class="pagination" id="pagination"></div>
 
     </div>
 
-    <!-- Confirmation Modal -->
     <div class="modal-overlay" id="delete-modal">
         <div class="modal">
             <div class="modal-icon">
@@ -98,7 +101,6 @@
     </div>
 
     <script>
-        // Nav hamburger
         const hamburger = document.getElementById('nav-hamburger');
         const drawer    = document.getElementById('nav-drawer');
 
@@ -122,7 +124,6 @@
             }
         });
 
-        // Sign out
         function handleSignOut(e) {
             e.preventDefault();
             localStorage.removeItem('token');
@@ -131,7 +132,6 @@
         document.getElementById('desktop-signout').addEventListener('click', handleSignOut);
         document.getElementById('mobile-signout').addEventListener('click', handleSignOut);
 
-        // Modal state 
         let pendingDeleteId  = null;
         let pendingDeleteRow = null;
 
@@ -162,7 +162,7 @@
             if (!pendingDeleteId) return;
 
             const authToken = localStorage.getItem('token');
-            if (!authToken) { window.location.href = '/auth/login'; return; }
+            if (!authToken) { window.location.href = '/auth/login?next=/triggers'; return; }
 
             btnConfirm.disabled    = true;
             btnConfirm.textContent = 'Deleting…';
@@ -173,7 +173,7 @@
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
-                if (res.status === 401) { window.location.href = '/auth/login'; return; }
+                if (res.status === 401) { window.location.href = '/auth/login?next=/triggers'; return; }
 
                 if (res.ok) {
                     closeModal();
@@ -194,20 +194,20 @@
             }
         });
 
-        // Pagination
         const PAGE_SIZE = 10;
-        let allTriggers  = [];
-        let currentPage  = 1;
+        let allTriggers      = [];
+        let filteredTriggers = [];
+        let currentPage      = 1;
 
         function renderPage() {
             const tableBody = document.getElementById('trigger-table-body');
             tableBody.innerHTML = '';
 
             const start = (currentPage - 1) * PAGE_SIZE;
-            const page  = allTriggers.slice(start, start + PAGE_SIZE);
+            const page  = filteredTriggers.slice(start, start + PAGE_SIZE);
 
             if (!page.length) {
-                tableBody.innerHTML = '<tr class="state-row"><td colspan="6">No baits deployed yet.</td></tr>';
+                tableBody.innerHTML = '<tr class="state-row"><td colspan="6">No baits found.</td></tr>';
                 renderPagination();
                 return;
             }
@@ -247,14 +247,33 @@
         }
 
         function renderPagination() {
-            const total = Math.ceil(allTriggers.length / PAGE_SIZE);
+            const total = Math.ceil(filteredTriggers.length / PAGE_SIZE);
             const pg    = document.getElementById('pagination');
             if (total <= 1) { pg.innerHTML = ''; return; }
 
+            const WINDOW = 2;
             let html = '';
-            for (let i = 1; i <= total; i++) {
-                html += `<button class="pg-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+
+            const addBtn = (i, label) => {
+                html += `<button class="pg-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${label}</button>`;
+            };
+
+            addBtn(1, '1');
+
+            if (currentPage > WINDOW + 2) {
+                html += `<span class="pg-ellipsis">…</span>`;
             }
+
+            for (let i = Math.max(2, currentPage - WINDOW); i <= Math.min(total - 1, currentPage + WINDOW); i++) {
+                addBtn(i, i);
+            }
+
+            if (currentPage < total - WINDOW - 1) {
+                html += `<span class="pg-ellipsis">…</span>`;
+            }
+
+            if (total > 1) addBtn(total, total);
+
             pg.innerHTML = html;
 
             pg.querySelectorAll('.pg-btn').forEach(btn => {
@@ -266,18 +285,31 @@
             });
         }
 
-        //  Badge helper
-        function updateBadge(count) {
+        function updateBadge(count, filtered = false) {
             const badge = document.getElementById('count-badge');
-            badge.textContent   = `${count} bait${count !== 1 ? 's' : ''}`;
+            badge.textContent   = filtered
+                ? `${count} match${count !== 1 ? 'es' : ''}`
+                : `${count} bait${count !== 1 ? 's' : ''}`;
             badge.dataset.count = count;
             badge.classList.add('visible');
         }
 
-        //  Load triggers
+        document.getElementById('trigger-search').addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase().trim();
+            filteredTriggers = allTriggers.filter(t =>
+                t.token.toLowerCase().includes(q) ||
+                (t.callback_email || '').toLowerCase().includes(q) ||
+                (t.reminder || '').toLowerCase().includes(q) ||
+                new Date(t.created_at).toLocaleString().toLowerCase().includes(q)
+            );
+            currentPage = 1;
+            updateBadge(filteredTriggers.length, q.length > 0);
+            renderPage();
+        });
+
         async function loadTriggers() {
             const token = localStorage.getItem('token');
-            if (!token) { window.location.href = '/auth/login'; return; }
+            if (!token) { window.location.href = '/auth/login?next=/triggers'; return; }
 
             try {
                 const response = await fetch('/api/v1/triggers', {
@@ -285,7 +317,7 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                if (response.status === 401) { window.location.href = '/auth/login'; return; }
+                if (response.status === 401) { window.location.href = '/auth/login?next=/triggers'; return; }
 
                 const result    = await response.json();
                 const tableBody = document.getElementById('trigger-table-body');
@@ -295,8 +327,9 @@
                     return;
                 }
 
-                allTriggers = result.data || [];
-                currentPage = 1;
+                allTriggers      = result.data || [];
+                filteredTriggers = [...allTriggers];
+                currentPage      = 1;
                 updateBadge(allTriggers.length);
                 renderPage();
 
