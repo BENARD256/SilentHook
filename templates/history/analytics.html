@@ -167,13 +167,13 @@
     // Fetch & Bootstrap
     async function fetchStats() {
         const token = localStorage.getItem('token');
-        if (!token) { window.location.href = '/auth/login'; return; }
+        if (!token) { window.location.href = '/auth/login?next=/analytics'; return; }
 
         try {
             const res = await fetch(`${API_BASE}/stats`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (res.status === 401) { window.location.href = '/auth/login'; return; }
+            if (res.status === 401) { window.location.href = '/auth/login?next=/analytics'; return; }
             const { data } = await res.json();
             renderStats(data);
         } catch (e) { console.error('Stats fetch error:', e); }
@@ -187,7 +187,7 @@
             const res = await fetch(`${API_BASE}/alerts`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (res.status === 401) { window.location.href = '/auth/login'; return; }
+            if (res.status === 401) { window.location.href = '/auth/login?next=/analytics'; return; }
             const { data } = await res.json();
             allAlerts = data.all_alerts || [];
             filteredAlerts = [...allAlerts];
