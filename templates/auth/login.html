@@ -101,7 +101,10 @@
 
                 if (response.ok) {
                     localStorage.setItem('token', result.data.JWT);
-                    window.location.href = '/dashboard';
+                    const params = new URLSearchParams(window.location.search);
+                    const next   = params.get('next') || '/dashboard';
+                    window.location.href = next;
+                    ///window.location.href = '/dashboard';
                 } else {
                     if (result.error) {
                         showError(result.error);
