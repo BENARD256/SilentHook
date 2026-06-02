@@ -1,12 +1,17 @@
+import os
 import smtplib
 from email.message import EmailMessage
 from datetime import datetime, timezone
+from flask import current_app # For Fetching USER, APP_PASS
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Config
-SMTP_HOST  = "smtp.gmail.com"
-SMTP_PORT  = 587
-SMTP_USER  = "benardtera2@gmail.com"
-SMTP_PASS  = "rsfrmpwfqorjgvjq"
+SMTP_HOST  = os.environ.get('SMTP_HOST', 'smtp.gmail.com')
+SMTP_PORT  = os.environ.get('SMTP_PORT', 587)
+SMTP_USER  = os.environ.get('SMTP_USER')
+SMTP_PASS  = os.environ.get('SMTP_PASS')
 
 
 def send_mail(to_addr: str, subject: str, body_html: str, attachment: bytes = None, attachment_name: str = None):
@@ -64,7 +69,7 @@ _fim_dict = {
 }
 
 
-_dst_mail = "ab0779672750@gmail.com"
+_dst_mail = "test@gmail.com"
 _bait_type = "PPTX"
 _reminder = "Bait Triggered"
 
@@ -133,7 +138,7 @@ def processor(dst_mail: str, bait_type: str, reminder: str, alert_dict: dict) ->
               </p>
               <p style="margin:4px 0 0;font-size:22px;font-weight:700;
                          letter-spacing:0.08em;color:#ffffff;">
-                B<sub>2</sub>D
+                B<sup>2</sup>D
               </p>
             </td>
           </tr>
