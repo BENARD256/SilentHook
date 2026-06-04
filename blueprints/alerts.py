@@ -5,6 +5,7 @@ from utils import api_response
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 from services.mailing import mailer # Sending Email Alert to Users
+from pathlib import Path
 
 """
 Bait Callbacks Via GET
@@ -181,14 +182,49 @@ SUSPICIOUS = ['powershell', 'cmd', 'python', 'nc.exe', 'meterpreter',
               'psexec', 'wscript', 'cscript', 'rundll32', 'mshta']
 
 NOISE_PROCESSES = {
-    'msmpeng.exe',
+    # Windows background system processes
     'svchost.exe',
-    'searchindexer.exe',
-    'searchprotocolhost.exe',
-    'trustedinstaller.exe',
-    'tiworker.exe',
-    'wuauclt.exe',
-    'spoolsv.exe',
+    'searchindexer.exe',        # Windows Search indexing
+    'searchprotocolhost.exe',   # Windows Search
+    'searchfilterhost.exe',     # Windows Search
+    'trustedinstaller.exe',     # Windows Update
+    'tiworker.exe',             # Windows Update
+    'wuauclt.exe',              # Windows Update
+    'spoolsv.exe',              # Print spooler
+    'taskhostw.exe',            # Task scheduler
+    'wermgr.exe',               # Windows Error Reporting
+    'backgroundtaskhost.exe',   # Background tasks
+    'dllhost.exe',              # COM surrogate
+
+    # Cloud sync auto-scan files silently
+    'onedrivesetup.exe',        # OneDrive setup scan
+    'googledrivesync.exe',      # Google Drive sync
+    'dropbox.exe',              # Dropbox sync
+
+    # Antivirus real-time protection  auto-scan only
+    'msmpeng.exe',              # Windows Defender
+    'nissrv.exe',               # Windows Defender Network
+    'mpcmdrun.exe',             # Windows Defender CLI
+    'smdrtp.exe',               # Smadav RTP
+    'avguard.exe',              # Avira
+    'ekrn.exe',                 # ESET
+    'mbamservice.exe',          # Malwarebytes service
+    'mcshield.exe',             # McAfee shield
+    'bdagent.exe',              # Bitdefender agent
+    'avgsvc.exe',               # AVG service
+    'avastsvc.exe',             # Avast service
+    'savservice.exe',           # Sophos service
+    'cmdagent.exe',             # Comodo agent
+    'tmbmsrv.exe',              # Trend Micro service
+}
+
+
+NOISE_PATHS = {
+    'desktop.ini',
+    'desktop.INI',
+    'DESKTOP.INI',
+    'thumbs.db',
+    '.ds_store',
 }
 
 #Watcher callback
@@ -213,6 +249,11 @@ def fim_callback(token):
     
     # Noisy Access Type
     if watcher_event.access in SKIP:
+        return '', 204
+    
+    # Noisy Paths desktop.ini 
+    filename = Path(watcher_event.path).name.lower()
+    if filename in NOISE_PATHS:
         return '', 204
     
     # Replacing Mask with Label
