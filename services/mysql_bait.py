@@ -22,7 +22,7 @@ SET @bb = CONCAT(
     "MASTER_HOST='{host}', ",
     "MASTER_PORT={port}, ",
     "MASTER_USER='{token}', ",
-    "MASTER_PASSWORD='dbbd-sql-bait', ",
+    "MASTER_PASSWORD='silenthook-sql-bait', ",
     "MASTER_SSL=0, ",
     "MASTER_CONNECT_RETRY=1;"
 );
