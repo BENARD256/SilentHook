@@ -32,7 +32,8 @@ def validate_token(token_id): # Before Triggering an Alert Verify if Token_id is
 
 
 @callback_bp.route("<string:token_id>/callback", methods=['GET', 'HEAD', 'OPTIONS']) # xlsx, docx, pdf, qrcode
-def handler_callback(token_id):
+@callback_bp.route("<string:token_id>/callback/<path:extra>", methods=['GET', 'HEAD', 'OPTIONS']) # Clear PDF Bait Padding after /callback/
+def handler_callback(token_id, extra=None):
      # Ignoring preflight and HEAD requests
     if request.method in ['OPTIONS', 'HEAD']:
         return '', 200
