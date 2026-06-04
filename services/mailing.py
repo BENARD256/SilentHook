@@ -26,7 +26,7 @@ def send_mail(to_addr: str, subject: str, body_html: str, attachment: bytes = No
         attachment_name: Filename for the attachment
     """
     msg = EmailMessage()
-    msg["From"]    = SMTP_USER
+    msg["From"]    = f"SilentHook <{SMTP_USER}>"
     msg["To"]      = to_addr
     msg["Subject"] = subject
 
@@ -87,6 +87,8 @@ def processor(dst_mail: str, bait_type: str, reminder: str, alert_dict: dict) ->
 
     alert_dict.pop('id')
 
+    BASE_URL = current_app.config['CALLBACK_URL'] # Fetch current url to append in email 
+    
     for key, value in alert_dict.items():
         key = key.replace("_", " ")
 
@@ -131,15 +133,13 @@ def processor(dst_mail: str, bait_type: str, reminder: str, alert_dict: dict) ->
 
           <!-- Header -->
           <tr>
-            <td style="background:#f97316;padding:20px 32px;text-align:center;">
-              <p style="margin:0;font-size:11px;font-weight:600;letter-spacing:0.15em;
-                         text-transform:uppercase;color:rgba(255,255,255,0.85);">
-                Bait-Based Deception
-              </p>
-              <p style="margin:4px 0 0;font-size:22px;font-weight:700;
-                         letter-spacing:0.08em;color:#ffffff;">
-                B<sup>2</sup>D
-              </p>
+            <td style="background:#0d1117;padding:0;
+                    border-radius:12px 12px 0 0;
+                    border-bottom:2px solid #f97316;">
+                <img src="https://raw.githubusercontent.com/BENARD256/DBBD/main/static/images/email/header_mail.png"
+                    alt="SilentHook"
+                    width="520" height="auto"
+                    style="display:block;width:100%;max-width:520px;">
             </td>
           </tr>
 
@@ -232,14 +232,14 @@ def processor(dst_mail: str, bait_type: str, reminder: str, alert_dict: dict) ->
         <tr>
             <td style="padding:20px 32px 8px;text-align:center;
                         background-color:#ffffff;">
-                <a href="http://192.168.100.10:5000/auth/login?next=/analytics"
+                <a href="{BASE_URL+'/auth/login?next=/analytics'}"
                     style="display:inline-block;padding:10px 24px;
                             background-color:#f97316;border-radius:6px;
                             font-size:13px;font-weight:600;color:#ffffff;
                             text-decoration:none;margin:0 4px 8px;">
                     Alerts Analytics
                 </a>
-                <a href="http://192.168.100.10:5000/auth/login?next=/triggers"
+                <a href="{BASE_URL+'/auth/login?next=/triggers'}"
                     style="display:inline-block;padding:10px 24px;
                             background-color:#ffffff;border:1px solid #d0d7de;
                             border-radius:6px;font-size:13px;font-weight:600;
@@ -278,7 +278,7 @@ def mailer(dst_mail: str, bait_type:str, reminder: str, alert_dict: dict):
     try:
         return send_mail(
             to_addr=dst_mail,
-            subject="Alert, Bait Triggered",
+            subject="Alert Triggered",
             body_html=body_html
         )
     except Exception as e:
