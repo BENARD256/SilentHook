@@ -98,7 +98,6 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None, center_i
     if bait_abbrv.lower() == 'pdf':
         parsed = urlparse(callback_url)
         host   = f"{parsed.hostname}/token/{token}/callback"
-
         return pdf_bait(CALLBACK_URL=host, TEMPLATE=template_path, TOKEN=token)
     
     # Mysql Dump
