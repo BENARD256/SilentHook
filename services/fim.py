@@ -20,10 +20,18 @@ def make_bait(callback_token : str, callback_url: str, monitored_path: str,  tem
     # WRITING CHANGES
     TEMP_DIR = template_dir / "tmp"
     TEMP_DIR.mkdir(parents=True, exist_ok=True)
-    out_path = TEMP_DIR / f"deploy_{callback_token}.ps1"
-    out_path.write_bytes(data)
+    deploy_path = TEMP_DIR / f"deploy_{callback_token}.ps1"
+    deploy_path.write_bytes(data)
     
-    return out_path # static/baits/fim/tmp
+    # Uninstallation Script
+    uninstall_data = Path(template_dir / "uninstall.ps1").read_bytes()
+    uninstall_data = uninstall_data.replace(CALLBACK_TOKEN, callback_token.encode())
+    uninstall_data = uninstall_data.replace(MONITORED_PATH, monitored_path.encode())
+
+    uninstall_path = TEMP_DIR / f"uninstall_{callback_token}.ps1"
+    uninstall_path.write_bytes(uninstall_data)
+
+    return TEMP_DIR # static/baits/fim/tmp
 
 
 def fim_bait(callback_token: str, callback_url: str, template_dir: Path, monitored_path: str = DEFAULT_DIR):
@@ -32,7 +40,7 @@ def fim_bait(callback_token: str, callback_url: str, template_dir: Path, monitor
 
     template_dir = Path(template_dir) # Converts path to PosixPath Object
 
-    deploy_injected = make_bait( callback_token=callback_token, callback_url=callback_url, monitored_path=monitored_path, template_dir=template_dir)
+    temp = make_bait( callback_token=callback_token, callback_url=callback_url, monitored_path=monitored_path, template_dir=template_dir)
     
     #print("Patched path: ", type(deploy_injected), deploy_injected)
 
@@ -41,12 +49,14 @@ def fim_bait(callback_token: str, callback_url: str, template_dir: Path, monitor
     out_zip  = DOWNLOADS_DIR / zip_name
 
     with ZipFile(out_zip, "w", ZIP_DEFLATED) as zf:
-        zf.write(deploy_injected, arcname="deploy.ps1")
+        zf.write(temp/f"deploy_{callback_token}.ps1", arcname="deploy.ps1")
+        zf.write(temp/f"uninstall_{callback_token}.ps1", arcname=f"uninstall_{callback_token}.ps1")
         zf.write(template_dir / "watcher.ps1", arcname="watcher.ps1")
         zf.write(template_dir / "README.md", arcname="README.md")
 
     # Cleaning up the file temp
-    deploy_injected.unlink()
+    (temp / f"deploy_{callback_token}.ps1").unlink()
+    (temp / f"uninstall_{callback_token}.ps1").unlink()
     
     
     #print("Zip ready:", out_zip) # posix.Path
