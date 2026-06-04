@@ -11,6 +11,5 @@
 # Installed as <tokenId>.ps1	
 #
 # Uninstall:
-# 	attrib -h -s “c:\watcher\*”
-#	del c:\watcher\*
+# powershell.exe -ExecutionPolicy Bypass -File .\uninstall_<id>.ps1
 # ============================================================
