@@ -17,6 +17,8 @@ $FolderName  = Split-Path $FolderPath -Leaf
 $TaskName    = "Watcher_${baitId}" # i.e Watcher_ae99ed54340fb22f : Bg Process Name
 $WatcherPath = "C:\watcher\$baitId.ps1"
 $WatcherSrc  = "$PSScriptRoot\watcher.ps1"
+$UninstallSrc  = "$PSScriptRoot\uninstall_${baitId}.ps1"
+$UninstallDest = "C:\watcher\uninstall_${baitId}.ps1"
 
 
 # FUNCTION 1 - Enable Audit Policy
@@ -74,6 +76,9 @@ function Install-Persistence {
     # Remove hidden/system attributes if file exists
     if (Test-Path $WatcherPath) { & attrib -h -s $WatcherPath }
 
+    # Copy uninstall script — after folder is guaranteed to exist
+    if (Test-Path $UninstallSrc) { Copy-Item $UninstallSrc $UninstallDest -Force }
+
     # Read watcher template and inject FolderName and CallbackURL
     $script = Get-Content $WatcherSrc -Raw
     $script = $script -replace 'FOLDER_NAME',  $FolderName
@@ -83,7 +88,7 @@ function Install-Persistence {
     & attrib +h +s $WatcherPath
     Write-Host "[+] Watcher script deployed to: $WatcherPath" -ForegroundColor Green
 
-    # Install as silent scheduled task - compatible with all Windows versions
+    # Install as silent scheduled task
     & schtasks.exe /Create /TN $TaskName /TR "powershell.exe -windowstyle hidden -ExecutionPolicy Bypass -File `"$WatcherPath`"" /SC ONSTART /RU SYSTEM /RL HIGHEST /F | Out-Null
     & schtasks.exe /Run /TN $TaskName
 
