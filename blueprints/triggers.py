@@ -96,10 +96,10 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None, center_i
 
     # PDF
     if bait_abbrv.lower() == 'pdf':
-        try:
-            return pdf_bait(CALLBACK_URL=callback_url_get, TEMPLATE=template_path, TOKEN=token)
-        except Exception as e:
-            return pdf_bait(CALLBACK_URL=callback_url_get, TEMPLATE=template_path, TOKEN=token)
+        parsed = urlparse(callback_url)
+        host   = f"{parsed.hostname}/token/{token}/callback"
+
+        return pdf_bait(CALLBACK_URL=host, TEMPLATE=template_path, TOKEN=token)
     
     # Mysql Dump
     if bait_abbrv.lower() == 'mysql_dump':
