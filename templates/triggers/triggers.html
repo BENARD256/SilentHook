@@ -1,18 +1,24 @@
+{% extends "base.html" %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% block head %}
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>My Baits - DBBD</title>
+    <title>{% block title %}My Baits | SilentHook{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="/static/css/triggers/triggers.css">
-    <link rel="icon" type="image/png" href="static/images/favicon.png">
+    <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
+
+    {% endblock %}
 </head>
 
 <body>
+    {% block content %}
 
     <nav>
-        <a class="nav-brand" href="/dashboard">DB<span>BD</span></a>
+        <a class="nav-brand" href="/dashboard">Silent<span>Hook</span></a>
         <ul class="nav-links">
             <li><a href="/dashboard">Dashboard</a></li>
             <li><a href="/triggers" class="active">My Baits</a></li>
@@ -45,8 +51,8 @@
     <div class="page-wrapper">
 
         <header class="page-header">
-            <h1>DBBD / <span>Deployed Baits</span></h1>
-            <span class="badge" id="count-badge">— baits</span>
+            <h1>SH / <span>Deployed Baits</span></h1>
+            <span class="badge" id="count-badge">baits</span>
         </header>
 
         <div class="search-bar-wrap">
@@ -342,5 +348,8 @@
 
         window.onload = loadTriggers;
     </script>
+
+    {% endblock %}
+    
 </body>
 </html>

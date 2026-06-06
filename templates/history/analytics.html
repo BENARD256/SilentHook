@@ -1,19 +1,26 @@
+{% extends "base.html" %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% block head %}
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DBBD Analytics</title>
+    <title>{% block title %}Analytics | SilentHook{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/history/analytics.css">
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <link rel="icon" type="image/png" href="static/images/favicon.png">
+    <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
+
+    {% endblock %}
+
 </head>
 <body>
+{% block content %}
 
 <nav>
-    <a class="nav-brand" href="/dashboard">DB<span>BD</span></a>
+    <a class="nav-brand" href="/dashboard">Silent<span>Hook</span></a>
     <ul class="nav-links">
         <li><a href="/dashboard">Dashboard</a></li>
         <li><a href="/triggers">My Baits</a></li>
@@ -46,7 +53,7 @@
 <div class="page-wrapper">
 
     <header class="page-header">
-        <h1>DBBD / <span>Analytics</span></h1>
+        <h1>SH / <span>Analytics</span></h1>
         <span class="badge visible" id="last-activity">last activity</span>
     </header>
 
@@ -496,5 +503,7 @@
         });
     });
 </script>
+
+{% endblock %}
 </body>
 </html>
