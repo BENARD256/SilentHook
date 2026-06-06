@@ -27,6 +27,9 @@ class Config:
     # MSQL DECOY SERVER PORT
     MYSQL_PORT = 3308 # Required for running a Decoy Sql Server
 
+    # TIME ZONE CONFIG FOR CORRECT ALERTING
+    TIMEZONE = 'Africa/Kampala'  # change on deployment
+
 class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = f"mysql+mysqlconnector://{username}:{password}@{host}:3306/{database_name}"
