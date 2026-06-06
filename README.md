@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/BENARD256/DBBD/main/static/images/email/header_mail.png" alt="SilentHook" width="100%">
+  <img src="https://raw.githubusercontent.com/BENARD256/SilentHook/main/static/images/email/header_mail.png" alt="SilentHook" width="100%">
 </p>
 
-A bait-based deception engine that deploys decoy files, tokens and integrity monitors across your environment — silently alerting you the moment an insider or intruder takes the bait.
+A bait-based deception engine that deploys decoy files, tokens and integrity monitors across your environment silently alerting you the moment an insider or intruder takes the bait.
 
 ---
 
