@@ -236,7 +236,7 @@ def get_triggers(id=None):
         )
 
     # Multiple Triggers as per the user id
-    user_triggers = Triggers.query.filter_by(user_id=user_id).all() # Return all triggers that match the user id
+    user_triggers = Triggers.query.filter_by(user_id=user_id).order_by(Triggers.created_at.desc()).all()# Return all triggers that match the user id
     
 
     if not user_triggers:

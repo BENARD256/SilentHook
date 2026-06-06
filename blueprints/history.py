@@ -117,7 +117,7 @@ def get_alerts():
     
     # All Alerts From history
 
-    all_alerts = Alert_history.query.filter_by(user_id=user_id).all() # DB obj
+    all_alerts = Alert_history.query.filter_by(user_id=user_id).order_by(Alert_history.event_time.desc()).all()# DB obj
 
     return api_response(
         data = {
