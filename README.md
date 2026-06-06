@@ -14,14 +14,14 @@ git clone https://github.com/BENARD256/SilentHook.git
 cd SilentHook
 ```
 
-### Option 1 — Virtual Environment (Recommended)
+### Option 1 Virtual Environment (Recommended)
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Option 2 — System-wide install
+### Option 2  System-wide install
 ```bash
 pip install -r requirements.txt --break-system-packages
 ```
@@ -58,6 +58,7 @@ Create a `.env` file in the root of the project and fill in the following:
 ```env
 # Security
 JWT_SECRET_KEY="your_secret_key"
+CALLBACK_URL="Your_Domain_name/IP address"
 
 # Database
 DB_USERNAME=your_db_user
@@ -79,7 +80,21 @@ python3 -c "import secrets; print(secrets.token_hex(32))"
 ```
 Copy the output and set it as `JWT_SECRET_KEY`.
 
-### Email Setup (Gmail) — Required
+### Callback URL  Required
+`CALLBACK_URL` is the address baits use to contact home when triggered. It must be publicly accessible. Baits deployed on remote machines need to reach this URL over the internet.
+
+```env
+CALLBACK_URL="http://your-domain-or-ip:5000"
+```
+
+**Examples:**
+- Local network: `http://192.168.1.10:5000`
+- Public domain: `http://silenthook.example.com`
+- Public IP: `http://41.210.145.208:5000`
+
+> If `CALLBACK_URL` points to a local IP, baits will only trigger alerts when accessed from within the same network. For internet-wide detection, use a public domain or IP.
+
+### Email Setup (Gmail).  Required
 `SMTP_USER` is the Gmail address that will send alert emails.
 `SMTP_PASS` is **not your Gmail password** .It is a Google App Password.
 
