@@ -75,7 +75,7 @@ def get_stats():
         .filter(Alert_history.user_id == user_id)
         .group_by(Alert_history.source_ip)
         .order_by(func.count(Alert_history.id).desc())
-        .limit(5)
+        .limit(10)
         .all()
     )
 
