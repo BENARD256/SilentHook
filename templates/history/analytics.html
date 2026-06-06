@@ -240,7 +240,7 @@
 
         if (d.last_activity) {
             document.getElementById('last-activity').textContent =
-                'Last: ' + new Date(d.last_activity).toLocaleString();
+                'Last: ' + new Date(d.last_activity + 'Z').toLocaleString();
         }
 
         // Use renderWhenVisible so charts only render once container has width
@@ -417,7 +417,7 @@
                 <td class="token-cell"></td>
                 <td><span class="bait-badge bait-${a.bait_type}">${a.bait_type}</span></td>
                 <td class="ip-cell">${a.source_ip}</td>
-                <td class="date-cell">${new Date(a.event_time).toLocaleString()}</td>
+                <td class="date-cell">${new Date(a.event_time + 'Z').toLocaleString()}</td>
             `;
             row.querySelector('.token-cell').textContent = a.token;
             tbody.appendChild(row);

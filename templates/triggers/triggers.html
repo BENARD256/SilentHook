@@ -226,7 +226,7 @@
                     <td class="token-cell" title="${trigger.token}">${trigger.token}</td>
                     <td class="email-cell">${trigger.callback_email || '—'}</td>
                     <td class="reminder-cell"></td>
-                    <td class="date-cell">${new Date(trigger.created_at).toLocaleString()}</td>
+                    <td class="date-cell">${new Date(trigger.created_at + 'Z').toLocaleString()}</td>
                     <td style="text-align:center;">
                         <button class="btn-delete" title="Delete bait"
                                 data-id="${trigger.id}" data-token="${trigger.token}">
@@ -306,7 +306,7 @@
                 t.token.toLowerCase().includes(q) ||
                 (t.callback_email || '').toLowerCase().includes(q) ||
                 (t.reminder || '').toLowerCase().includes(q) ||
-                new Date(t.created_at).toLocaleString().toLowerCase().includes(q)
+                new Date(t.created_at + 'Z').toLocaleString().toLowerCase().includes(q)
             );
             currentPage = 1;
             updateBadge(filteredTriggers.length, q.length > 0);

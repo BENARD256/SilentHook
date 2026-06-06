@@ -1,6 +1,7 @@
 import os
 import smtplib
 from email.message import EmailMessage
+from zoneinfo import ZoneInfo
 from datetime import datetime, timezone
 from flask import current_app # For Fetching USER, APP_PASS
 from dotenv import load_dotenv
@@ -73,18 +74,17 @@ _dst_mail = "test@gmail.com"
 _bait_type = "PPTX"
 _reminder = "Bait Triggered"
 
-from datetime import datetime, timezone
-
-
 def processor(dst_mail: str, bait_type: str, reminder: str, alert_dict: dict) -> str:
 
     alert_details = ""
     alert_id  = alert_dict.get("id", "N/A")
 
     event_time = alert_dict.get('event_time')
-    event_time = f"{datetime.fromisoformat(event_time).replace(tzinfo=timezone.utc)} UTC"
+    tz = ZoneInfo(current_app.config.get('TIMEZONE', 'Africa/Kampala'))
+    event_time_utc   = datetime.fromisoformat(event_time).replace(tzinfo=timezone.utc)
+    event_time_local = event_time_utc.astimezone(tz)
+    event_time       = event_time_local.strftime('%Y-%m-%d %H:%M:%S %Z')
     alert_dict['event_time'] = event_time
-
     alert_dict.pop('id')
 
     BASE_URL = current_app.config['CALLBACK_URL'] # Fetch current url to append in email 
