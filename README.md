@@ -1,4 +1,8 @@
-<h1>SILENTHOOK DECEPTION ENGINE</h1>
+<p align="center">
+  <img src="static/images/email/mail_header.png" alt="SilentHook" width="600">
+</p>
+
+<h1>INSTALLATION</h1>
 ## Installation
 
 Clone the repository:
