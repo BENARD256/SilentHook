@@ -44,7 +44,7 @@ def handler_callback(token_id, extra=None):
     if not trigger_token:
         return api_response(message="Invalid token", status="error", code=404)
     
-    print("EMAIL AND REMINDER VERIFICATION", trigger_token.reminder, trigger_token.callback_email)
+    #print("EMAIL AND REMINDER VERIFICATION", trigger_token.reminder, trigger_token.callback_email)
     
 
 
@@ -81,11 +81,11 @@ def handler_callback(token_id, extra=None):
     bait_type = trigger_token.bait.abbrev if trigger_token.bait else "UNKNOWN"
 
     alert_dictionary = alert_schema.dump(alert) # Dictionary of all details in the Alert
-    print(alert_dictionary)
+    #print(alert_dictionary)
 
-    print("Emailing")
+    print("EMAILING..")
     mailer(dst_mail=trigger_token.callback_email, bait_type=bait_type, reminder=trigger_token.reminder, alert_dict=alert_dictionary)
-    print("Sent")
+    print("SENT")
 
     return api_response(
         data=alert_schema.dump(alert),
@@ -139,11 +139,11 @@ def domain_callback():
     bait_type = trigger_token.bait.abbrev if trigger_token.bait else "UNKNOWN"
 
     alert_dictionary = alert_schema.dump(alert) # Dictionary of all details in the Alert
-    print(alert_dictionary)
+    #print(alert_dictionary)
 
-    print("Emailing")
+    print("EMAILING..")
     mailer(dst_mail=trigger_token.callback_email, bait_type=bait_type, reminder=trigger_token.reminder, alert_dict=alert_dictionary)
-    print("Sent")
+    print("SENT")
 
     return api_response(
         data=alert_schema.dump(alert),
@@ -306,12 +306,13 @@ def fim_callback(token):
     alert_dictionary = watcher_schema.dump(watcher_event) # Dictionary of all details in the Alert
     #print("ALERT DICTIONARY DUMPL ", alert_dictionary)
     
-    print("sending..")
+    print("EMAILING..")
     mailer(dst_mail=trigger_token.callback_email, bait_type=bait_type, reminder=trigger_token.reminder, alert_dict=alert_dictionary)
-    print("Sent")
+    print("SENT.")
 
     
     # DEBUG LINES
+    """
     print("\n")
     print("#"*50)
     for key, value in watcher_schema.dump(watcher_event).items():
@@ -320,6 +321,7 @@ def fim_callback(token):
 
     print("\n")
 
+    """
     return api_response(
         data=watcher_schema.dump(watcher_event),
         message="Valid"

@@ -56,7 +56,7 @@ def generate_bait_file(token=None, bait_abbrv=None, template_path=None, center_i
     # Base Callback_url
     callback_url = current_app.config['CALLBACK_URL'] # Accessing url from config.py
 
-    print( "TOKEN:", token, "BAIT_ABBREV: ", bait_abbrv, "TEMPLATE_PATH: ", template_path, "URL: ", callback_url,)
+    #print( "TOKEN:", token, "BAIT_ABBREV: ", bait_abbrv, "TEMPLATE_PATH: ", template_path, "URL: ", callback_url,)
 
     # Constructing a Callback URL for all baits Via GET method
     # pdf, xlsx, docx, pptx, qr, domain
@@ -202,7 +202,7 @@ def create_trigger(bait_id=None):
     
     bait_output = generate_bait_file(token=trigger_data.token, bait_abbrv=bait_abbrv, template_path=template_path, center_image=center_image_path, monitored_path=monitored_path)# Returns BAIT FILE
 
-    print("Bait Output: is: ", bait_output)
+    #print("Bait Output: is: ", bait_output)
 
     return api_response(
         data={"trigger": trigger_schema.dump(trigger_data), "filename":bait_output}, # Verify from front it its not accessed directly as filename
@@ -217,7 +217,7 @@ def create_trigger(bait_id=None):
 @jwt_required()
 def get_triggers(id=None):
     user_id = get_jwt_identity() #
-    print("TYPE OF JWT TRIGGERS: ", user_id, type(user_id))
+    #print("TYPE OF JWT TRIGGERS: ", user_id, type(user_id))
 
     if id:
         # Single Trigger Filtered by id(table ID)
