@@ -197,8 +197,8 @@ section {
     width: 16px;
     height: 1px;
     background: var(--accent);
+    flex-shrink: 0;
 }
-
 /* ── How it works ── */
 .how-flow {
     display: grid;
@@ -216,6 +216,13 @@ section {
     overflow: hidden;
     transition: border-color 0.2s;
     min-width: 0;
+}
+
+/* Card Spacing Mobile */
+.how-card:not(:last-child) {
+    border-bottom: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 6px;
 }
 
 .how-card:hover { border-color: var(--accent); }
@@ -283,17 +290,42 @@ section {
     opacity: 0.4;
 }
 
-/* Stack vertically on mobile */
 @media (max-width: 768px) {
     .how-flow {
         grid-template-columns: 1fr;
+        gap: 0;
     }
+
     .how-arrow {
-        padding: 4px 0;
-        justify-content: flex-start;
-        padding-left: 12px;
-        transform: rotate(90deg);
-        height: 24px;
+        display: none;
+    }
+
+    .how-card {
+        border-radius: 0;
+        border-bottom: none;
+    }
+
+    .how-card:first-child {
+        border-radius: 10px 10px 0 0;
+    }
+
+    .how-card:last-child {
+        border-radius: 0 0 10px 10px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .how-card::after {
+        content: '';
+        display: block;
+        width: 1px;
+        height: 20px;
+        background: var(--accent);
+        margin: 0 auto;
+        opacity: 0.5;
+    }
+
+    .how-card:last-child::after {
+        display: none;
     }
 }
 
@@ -336,6 +368,8 @@ section {
     overflow: hidden;
     transition: border-color 0.2s, transform 0.2s;
     text-align: center;
+    display: flex;
+    flex-direction: column;
 }
 
 .team-card:hover {
@@ -350,11 +384,13 @@ section {
 
 .team-avatar img {
     width: 100%;
-    height: 220px;
+    height: 280px;
     border-radius: 10px 10px 0 0;
     object-fit: cover;
+    object-position: center center;
     border: none;
     background: var(--surface-2);
+    filter: brightness(1.3) contrast(1.05);
 }
 
 .team-body {
@@ -362,6 +398,7 @@ section {
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex: 1;
 }
 
 .team-name {
@@ -380,13 +417,13 @@ section {
     color: var(--accent);
     margin-bottom: 12px;
 }
-
 .team-bio {
     font-size: 0.82rem;
     color: var(--muted);
     line-height: 1.6;
     margin-bottom: 16px;
     text-align: center;
+    flex: 1;
 }
 
 .team-links {
@@ -397,15 +434,18 @@ section {
 
 .team-link {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.68rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.06em;
-    padding: 4px 14px;
+    padding: 7px 16px;
     border-radius: 4px;
     border: 1px solid var(--border);
     color: var(--muted);
     text-decoration: none;
     transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .team-link:hover {
@@ -413,6 +453,9 @@ section {
     color: var(--accent);
 }
 
+.team-link i {
+    font-size: 18px;
+}
 /* Vision */
 .vision-grid {
     display: grid;
@@ -516,78 +559,6 @@ section {
     color: var(--accent);
 }
 
-/* Footer */
-footer {
-    border-top: 1px solid var(--border);
-    padding: 24px 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    max-width: 1100px;
-    margin: 0 auto;
-}
-
-.footer-brand {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.78rem;
-    color: var(--muted);
-    letter-spacing: 0.08em;
-}
-
-.footer-brand span { color: var(--accent); }
-
-.footer-copy {
-    font-size: 0.75rem;
-    color: var(--muted);
-}
-
-.footer-links {
-    display: flex;
-    gap: 16px;
-}
-
-.footer-links a {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--muted);
-    text-decoration: none;
-    letter-spacing: 0.06em;
-    transition: color 0.15s;
-}
-
-.footer-links a:hover { color: var(--accent); }
-
-/* Animations */
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-.hero-eyebrow { animation: fadeUp 0.5s ease both; }
-.hero-title   { animation: fadeUp 0.5s 0.1s ease both; }
-.hero-desc    { animation: fadeUp 0.5s 0.2s ease both; }
-.hero-stats   { animation: fadeUp 0.5s 0.3s ease both; }
-
-/* Mobile */
-@media (max-width: 768px) {
-    nav { padding: 0 16px; }
-    .nav-links { gap: 16px; }
-    .nav-links a { font-size: 0.75rem; }
-
-    .hero { padding: 48px 16px 40px; }
-    .hero-stats { gap: 24px; }
-
-    section { padding: 40px 16px; }
-
-    .vision-grid { grid-template-columns: 1fr; }
-    .vision-card.accent-card { grid-column: 1; }
-
-    .contact-bar { flex-direction: column; align-items: flex-start; }
-
-    footer { padding: 20px 16px; flex-direction: column; align-items: flex-start; }
-
-    /* Fix iOS zoom on inputs */
-    input, select, textarea { font-size: 16px !important; }
+.contact-btn i {
+    font-size: 18px;
 }

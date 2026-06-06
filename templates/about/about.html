@@ -1,215 +1,252 @@
-    <!DOCTYPE html>
+{% extends "base.html" %}
+<!DOCTYPE html>
 <html lang="en">
 <head>
+    {% block head %}
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triggers DBBD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>{% block title %}About | SilentHook{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="/static/css/triggers/triggers.css">
-    <link rel="icon" type="image/png" href="static/images/favicon.png">
+    <link rel="stylesheet" href="/static/css/about/about.css">
+    <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
+
+    {% endblock %}
 </head>
-
 <body>
-    <div class="page-wrapper">
+{% block content %}
 
-        <header class="page-header">
-            <h1>DBBD / <span>Deployed Baits</span></h1>
-            <span class="badge" id="count-badge">— baits</span>
-        </header>
+<nav>
+    <a class="nav-brand" href="/dashboard">Silent<span>Hook</span></a>
+    <ul class="nav-links">
+        <li><a href="/dashboard">Dashboard</a></li>
+        <li><a href="/triggers">My Baits</a></li>
+        <li><a href="/analytics">Analytics</a></li>
+        <li><a href="#" class="active">Docs</a></li>
+    </ul>
+</nav>
 
-        <div class="table-card">
-            <table id="trigger-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Token</th>
-                        <th>Callback Email</th>
-                        <th>Reminder</th>
-                        <th>Created</th>
-                        <th style="width:80px; text-align:center;">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="trigger-table-body">
-                    <tr class="state-row">
-                        <td colspan="6">
-                            <span class="spinner"></span> Loading baits…
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+<!-- Hero -->
+<div class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-glow"></div>
+    <p class="hero-eyebrow">SilentHook Deception Engine</p>
+    <h1 class="hero-title">
+        Catch intruders<br>before they<br><em>cause damage.</em>
+    </h1>
+    <p class="hero-desc">
+        SilentHook is a Deception engine that deploys decoy files, tokens across your environment.
+        Silently alerting you the moment an insider or intruder takes the bait..
+    </p>
+    <div class="hero-stats">
+        <div class="stat">
+            <span class="stat-value">7+</span>
+            <span class="stat-label">Bait Types</span>
+        </div>
+        <div class="stat">
+            <span class="stat-value">3</span>
+            <span class="stat-label">Developers</span>
+        </div>
+        <div class="stat">
+            <span class="stat-value">2026</span>
+            <span class="stat-label">Academic Project</span>
+        </div>
+        <div class="stat">
+            <span class="stat-value">Real-time</span>
+            <span class="stat-label">Alerting</span>
+        </div>
+    </div>
+</div>
+
+<!-- How it works -->
+<section>
+    <p class="section-label">How It Works</p>
+    <div class="how-flow">
+
+        <div class="how-card">
+            <div class="how-icon-wrap">
+                <i class="ti ti-file-plus"></i>
+            </div>
+            <div class="how-number">01  DEPLOY</div>
+            <div class="how-title">Plant a Bait</div>
+            <div class="how-desc">"Generate a decoy file i.e DOCX, PDF, XLSX, QR code, or SQL_dump and place it in a location an attacker is likely to discover during reconnaissance or lateral movement."</div>
+        </div>
+
+        <div class="how-arrow"><i class="ti ti-arrow-right"></i></div>
+
+        <div class="how-card">
+            <div class="how-icon-wrap">
+                <i class="ti ti-eye"></i>
+            </div>
+            <div class="how-number">02  MONITOR</div>
+            <div class="how-title">Watch for Access</div>
+            <div class="how-desc">"Each bait carries a unique token. The moment it is opened, executed, or scanned, a callback fires to the SilentHook server."</div>
+        </div>
+
+        <div class="how-arrow"><i class="ti ti-arrow-right"></i></div>
+
+        <div class="how-card">
+            <div class="how-icon-wrap">
+                <i class="ti ti-bolt"></i>
+            </div>
+            <div class="how-number">03  ALERT</div>
+            <div class="how-title">Instant Notification</div>
+            <div class="how-desc">"The trigger is logged with the attacker's IP, timestamp, user agent, and hostname. An alert email is dispatched to the owner immediately."</div>
+        </div>
+
+        <div class="how-arrow"><i class="ti ti-arrow-right"></i></div>
+
+        <div class="how-card">
+            <div class="how-icon-wrap">
+                <i class="ti ti-zoom-in"></i>
+            </div>
+            <div class="how-number">04  INVESTIGATE</div>
+            <div class="how-title">Forensic Analysis</div>
+            <div class="how-desc">"Review the Alert Email & Analytics dashboards for a full picture of the event, who accessed it, when, from where, and how. Use this information to scope the breach and inform your response."</div>
         </div>
 
     </div>
+</section>
 
-    <!-- Confirmation Modal -->
-    <div class="modal-overlay" id="delete-modal">
-        <div class="modal">
-            <div class="modal-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-                </svg>
+<!-- Bait types -->
+<section>
+    <p class="section-label">Supported Bait Types</p>
+    <div class="bait-grid">
+        <span class="bait-tag">DOCX · Word Document</span>
+        <span class="bait-tag">XLSX · Excel Spreadsheet</span>
+        <span class="bait-tag">PPTX · PowerPoint</span>
+        <span class="bait-tag">PDF · Document</span>
+        <span class="bait-tag">QR · QRCode</span>
+        <span class="bait-tag">FIM · Folder Intergrity Monitor</span>
+        <span class="bait-tag">DOMAIN · DNS/HTTP Token</span>
+        <span class="bait-tag">MYSQL_DUMP · SQL Token</span>
+    </div>
+</section>
+
+<!-- Vision -->
+<section>
+    <p class="section-label">Project Vision</p>
+    <div class="vision-grid">
+        <div class="vision-card accent-card">
+            <div class="vision-title">Why SilentHook?</div>
+            <div class="vision-text">
+                Most security tools try to keep attackers out. SilentHook assumes they're already in.
+                As a deception layer in a Defence in Depth strategy, SilentHook plants decoy files and tokens inside your environment operating behind your existing defences. 
+                <br>Unlike traditional detection tools, it generates near-zero false positives. No alerts unless something is touched. And if something is touched — it's not a maybe. It's a confirmed intrusion.
             </div>
-            <h2>Delete Bait?</h2>
-            <p>This will permanently remove the bait and all associated data. This action cannot be undone.</p>
-            <div class="modal-token" id="modal-token-display">—</div>
-            <div class="modal-actions">
-                <button class="btn btn-cancel" id="modal-cancel">Cancel</button>
-                <button class="btn btn-confirm-delete" id="modal-confirm">Delete Bait</button>
+        </div>
+        <div class="vision-card">
+            <div class="vision-title">Academic Goal</div>
+            <div class="vision-text">
+                Demonstrate practical application of deception technology concepts tokens,
+                honeyfiles, and file integrity monitoring in a unified, production-grade platform
+                built on Flask, MariaDB, and vanilla JS.
+            </div>
+        </div>
+        <div class="vision-card">
+            <div class="vision-title">Security Goal</div>
+            <div class="vision-text">
+                Provide lightweight decoy assets i.e files, tokens, and traps as a deception layer within a Defence in Depth strategy. 
+                <br>SilentHook supplements existing controls such as firewalls, IDS, and SIEM solutions, without requiring enterprise-level infrastructure or changes to the current security stack.
             </div>
         </div>
     </div>
+</section>
 
-    <script>
-        // Modal state
-        let pendingDeleteId  = null;
-        let pendingDeleteRow = null;
+<section>
+    <p class="section-label">The Team</p>
+    <div class="team-grid">
+        <div class="team-card">
+            <div class="team-avatar">
+                <img src="static/images/anzo.png" alt="Anzo Benard">
+            </div>
+            <div class="team-body">
+                <div class="team-name">Anzo Benard</div>
+                <div class="team-role">Lead Developer · Backend & Security</div>
+                <div class="team-bio">
+                    <b>Bsc Networks & Cybersecurity . CompTIA Security+ certified.</b>
+                    <br>Specializes in Flask APIs Dev't, Python Flask Backend Design, Research in deception technology and Baits Development.
+                </div>
+                <div class="team-links">
+                    <a class="team-link" href="https://github.com/BENARD256" target="_blank">
+                        <i class="ti ti-brand-github"></i> GitHub
+                    </a>
+                    <a class="team-link" href="https://www.linkedin.com/in/anzo-benard-92123a31a" target="_blank">
+                        <i class="ti ti-brand-linkedin"></i> LinkedIn
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="team-card">
+            <div class="team-avatar">
+                <img src="static/images/e_brighton.png" alt="Egeru Brighton">
+            </div>
+            <div class="team-body">
+                <div class="team-name">Egeru Brighton</div>
+                <div class="team-role">Developer · Frontend & Alerts</div>
+                <div class="team-bio">
+                    <b>Bsc Networks & Cybersecurity.</b>
+                    <br>Focused on the alert delivery pipeline and email notification system.
+                    Handles frontend templating and user interface components.
+                </div>
+                <div class="team-links">
+                    <a class="team-link" href="https://github.com/ebpsalm" target="_blank">
+                        <i class="ti ti-brand-github"></i> GitHub
+                    </a>
+                    <a class="team-link" href="https://www.linkedin.com/in/egeru-brighton-93931521b" target="_blank">
+                        <i class="ti ti-brand-linkedin"></i> LinkedIn
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="team-card">
+            <div class="team-avatar">
+                <img src="static/images/abdul.png" alt="Abdul Ssegawa">
+            </div>
+            <div class="team-body">
+                <div class="team-name">Abdul Ssegawa</div>
+                <div class="team-role">Developer · Backend, Security & Documentation</div>
+                <div class="team-bio">
+                    <b>Bsc Networks & Cybersecurity . CompTIA Security+ certified.</b>
+                    <br>Contributed to backend route development and security hardening of the platform.
+                    Handled bug fixes, system debugging, and ensured secure data flow across endpoints.
+                    Authored the project documentation and technical write-up.
+                </div>
+                <div class="team-links">
+                    <a class="team-link" href="https://github.com/Snowden-7" target="_blank">
+                        <i class="ti ti-brand-github"></i> GitHub
+                    </a>
+                    <a class="team-link" href="https://www.linkedin.com/in/segawa-abdul-b7041b2b7" target="_blank">
+                        <i class="ti ti-brand-linkedin"></i> LinkedIn
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-        const modal      = document.getElementById('delete-modal');
-        const modalToken = document.getElementById('modal-token-display');
-        const btnCancel  = document.getElementById('modal-cancel');
-        const btnConfirm = document.getElementById('modal-confirm');
+<!-- Contact -->
+<section>
+    <p class="section-label">Get In Touch</p>
+    <div class="contact-bar">
+        <div class="contact-text">
+            <h3>Interested in Project SilentHook?</h3>
+            <p>View the source code, report issues, or reach out to the team directly.</p>
+        </div>
+        <div class="contact-links">
+            <a class="contact-btn primary" href="https://github.com/BENARD256/DBBD" target="_blank">
+                <i class="ti ti-brand-github"></i>
+                GitHub
+            </a>
+            <a class="contact-btn secondary" href="mailto:benardtera2@gmail.com">
+                <i class="ti ti-mail"></i>
+                Email Us
+            </a>
+        </div>
+    </div>
+</section>
 
-        function openModal(id, token, row) {
-            pendingDeleteId  = id;
-            pendingDeleteRow = row;
-            modalToken.textContent = token;
-            modal.classList.add('open');
-            btnConfirm.disabled = false;
-            btnConfirm.textContent = 'Delete Bait';
-        }
-
-        function closeModal() {
-            modal.classList.remove('open');
-            pendingDeleteId  = null;
-            pendingDeleteRow = null;
-        }
-
-        btnCancel.addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-
-        btnConfirm.addEventListener('click', async () => {
-            if (!pendingDeleteId) return;
-
-            const authToken = localStorage.getItem('token');
-            if (!authToken) { window.location.href = '/auth/login'; return; }
-
-            btnConfirm.disabled = true;
-            btnConfirm.textContent = 'Deleting…';
-
-            console.log('Attempting DELETE:', `/api/v1/triggers/${pendingDeleteId}`); // ← add this
-
-            try {
-                const res = await fetch(`/api/v1/triggers/${pendingDeleteId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-
-                console.log('Response status:', res.status); // ← and this
-
-                if (res.status === 401) {
-                    window.location.href = '/auth/login';
-                    return;
-                }
-
-                // Remove row regardless — optimistic UI
-                pendingDeleteRow.style.transition = 'opacity 0.3s, transform 0.3s';
-                pendingDeleteRow.style.opacity = '0';
-                pendingDeleteRow.style.transform = 'translateX(12px)';
-                setTimeout(() => { pendingDeleteRow.remove(); updateBadgeCount(-1); }, 300);
-                closeModal();
-
-            } catch (err) {
-                console.error("Delete error:", err); // ← this tells us if it's a network/CORS issue
-                closeModal(); // close modal even on error
-            }
-        });
-
-        // Badge count helper 
-        function updateBadgeCount(delta) {
-            const badge = document.getElementById('count-badge');
-            const current = parseInt(badge.dataset.count || '0') + delta;
-            badge.dataset.count = current;
-            badge.textContent = `${current} bait${current !== 1 ? 's' : ''}`;
-            if (current === 0) {
-                document.getElementById('trigger-table-body').innerHTML =
-                    '<tr class="state-row"><td colspan="6">No baits deployed yet.</td></tr>';
-            }
-        }
-
-        // Load Baits to table
-        async function loadTriggers() {
-            const token = localStorage.getItem('token');
-            if (!token) { window.location.href = '/auth/login'; return; }
-
-            try {
-                const response = await fetch('/api/v1/triggers', {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (response.status === 401) {
-                    alert("Session expired. Redirecting to login.");
-                    window.location.href = "/auth/login";
-                    return;
-                }
-
-                const result    = await response.json();
-                const tableBody = document.getElementById('trigger-table-body');
-                tableBody.innerHTML = '';
-
-                if (!response.ok) {
-                    tableBody.innerHTML = `<tr class="state-row"><td colspan="6">Error: ${result.message || 'Could not fetch data'}</td></tr>`;
-                    return;
-                }
-
-                if (result.data.length === 0) {
-                    tableBody.innerHTML = '<tr class="state-row"><td colspan="6">No baits deployed yet.</td></tr>';
-                    return;
-                }
-
-                const badge = document.getElementById('count-badge');
-                badge.textContent  = `${result.data.length} bait${result.data.length !== 1 ? 's' : ''}`;
-                badge.dataset.count = result.data.length;
-                badge.classList.add('visible');
-
-                result.data.forEach((trigger, i) => {
-                    const row = document.createElement('tr');
-                    row.style.animationDelay = `${i * 40}ms`;
-                    row.innerHTML = `
-                        <td>${trigger.id}</td>
-                        <td class="token-cell" title="${trigger.token}">${trigger.token}</td>
-                        <td class="email-cell">${trigger.callback_email}</td>
-                        <td class="reminder-cell">${trigger.reminder}</td>
-                        <td class="date-cell">${new Date(trigger.created_at).toLocaleString()}</td>
-                        <td style="text-align:center;">
-                            <button class="btn-delete" title="Delete bait"
-                                    data-id="${trigger.id}" data-token="${trigger.token}">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                     stroke="currentColor" stroke-width="2"
-                                     stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="3 6 5 6 21 6"/>
-                                    <path d="M19 6l-1 14H6L5 6"/>
-                                    <path d="M10 11v6"/><path d="M14 11v6"/>
-                                    <path d="M9 6V4h6v2"/>
-                                </svg>
-                            </button>
-                        </td>
-                    `;
-                    row.querySelector('.btn-delete').addEventListener('click', (e) => {
-                        const btn = e.currentTarget;
-                        openModal(btn.dataset.id, btn.dataset.token, row);
-                    });
-                    tableBody.appendChild(row);
-                });
-
-            } catch (err) {
-                console.error("Network or parse error:", err);
-                document.getElementById('trigger-table-body').innerHTML =
-                    '<tr class="state-row"><td colspan="6">Network error — check console.</td></tr>';
-            }
-        }
-
-        window.onload = loadTriggers;
-    </script>
+{% endblock %}
 </body>
 </html>
