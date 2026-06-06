@@ -149,3 +149,24 @@ Then set `debug=False` and consider using a production WSGI server like Gunicorn
 ```bash
 gunicorn -w 4 -b 0.0.0.0:5000 apps:app
 ```
+
+## Screenshots
+
+### Login
+![Login](static/images/screenshots/login.png)
+
+### Register
+![Register](static/images/screenshots/register.png)
+
+### Dashboard
+![Dashboard](static/images/screenshots/dashboard.png)
+
+### My Baits
+![My Baits](static/images/screenshots/mybaits.png)
+
+### Analytics
+![Analytics 1](static/images/screenshots/analytics_1.png)
+![Analytics 2](static/images/screenshots/analytics_2.png)
+
+### Alert Email
+![Email Notification](static/images/screenshots/email_notification.png)
