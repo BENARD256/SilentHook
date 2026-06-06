@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SilentHook Email Header</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #f6f8fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .header {
+            background: #0d1117;
+            padding: 28px 40px;
+            border-bottom: 3px solid #f97316;
+            width: 520px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+
+        <!-- Hook icon — pure SVG, no external deps, white/orange on dark -->
+        <svg width="54" height="54" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg"
+             style="flex-shrink:0;">
+            <!-- Shield outline -->
+            <path d="M27 3L7 11V27C7 38.5 16 48 27 51C38 48 47 38.5 47 27V11L27 3Z"
+                  stroke="#f97316" stroke-width="1.8" fill="#1a1f2e"/>
+            <!-- Hook curve -->
+            <path d="M27 15C27 15 20 17 20 24C20 28.4 23.1 32 27.5 32C31.9 32 35 28.4 35 24"
+                  stroke="#e6edf3" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+            <!-- Hook downward bend -->
+            <path d="M20 24C20 24 17.5 27 18.5 31C19.5 34.5 23 36 26 35"
+                  stroke="#e6edf3" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+            <!-- Hook tip -->
+            <path d="M26 35L23 42L28 44"
+                  stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <!-- Eye -->
+            <circle cx="27" cy="23" r="2.2" fill="#f97316"/>
+        </svg>
+
+        <div>
+            <p style="margin:0;font-size:24px;font-weight:700;
+                      letter-spacing:0.12em;text-transform:uppercase;line-height:1.1;">
+                <span style="color:#8b949e;">Silent</span><span style="color:#f97316;">Hook</span>
+            </p>
+            <p style="margin:5px 0 0;font-size:11px;font-weight:600;
+                      letter-spacing:0.22em;text-transform:uppercase;color:#8b949e;">
+                Deception Engine
+            </p>
+        </div>
+
+    </div>
+</body>
+</html>
