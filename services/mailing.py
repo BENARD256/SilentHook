@@ -136,7 +136,7 @@ def processor(dst_mail: str, bait_type: str, reminder: str, alert_dict: dict) ->
             <td style="background:#0d1117;padding:0;
                     border-radius:12px 12px 0 0;
                     border-bottom:2px solid #f97316;">
-                <img src="https://raw.githubusercontent.com/BENARD256/DBBD/main/static/images/email/header_mail.png"
+                <img src="https://raw.githubusercontent.com/BENARD256/SilentHook/main/static/images/email/header_mail.png"
                     alt="SilentHook"
                     width="520" height="auto"
                     style="display:block;width:100%;max-width:520px;">
