@@ -33,7 +33,7 @@ CREATE TABLE `alert_history` (
   PRIMARY KEY (`id`),
   KEY `token_id` (`token`),
   CONSTRAINT `token_id` FOREIGN KEY (`token`) REFERENCES `triggers` (`token`)
-) ENGINE=InnoDB AUTO_INCREMENT=487 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=513 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -52,7 +52,7 @@ CREATE TABLE `alerts` (
   PRIMARY KEY (`id`),
   KEY `generated_token_id` (`token`),
   CONSTRAINT `generated_token_id` FOREIGN KEY (`token`) REFERENCES `triggers` (`token`)
-) ENGINE=InnoDB AUTO_INCREMENT=369 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=395 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -95,7 +95,7 @@ CREATE TABLE `triggers` (
   KEY `baitz_id` (`bait_id`),
   CONSTRAINT `baitz_id` FOREIGN KEY (`bait_id`) REFERENCES `baits` (`id`),
   CONSTRAINT `users_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=328 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=354 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -111,7 +111,7 @@ CREATE TABLE `users` (
   `email` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -145,4 +145,69 @@ CREATE TABLE `watcher_events` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-06 20:59:33
+-- Dump completed on 2026-06-15 23:45:10
+/*M!999999\- enable the sandbox mode */ 
+-- MariaDB dump 10.19  Distrib 10.11.14-MariaDB, for debian-linux-gnu (x86_64)
+--
+-- Host: localhost    Database: dbbd
+-- ------------------------------------------------------
+-- Server version	10.11.14-MariaDB-0+deb12u2
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `baits`
+--
+
+DROP TABLE IF EXISTS `baits`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `baits` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `abbrev` varchar(10) NOT NULL,
+  `type` varchar(50) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `bait_path` varchar(255) NOT NULL,
+  `image_path` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `baits`
+--
+
+LOCK TABLES `baits` WRITE;
+/*!40000 ALTER TABLE `baits` DISABLE KEYS */;
+INSERT INTO `baits` VALUES
+(1,'MS Word Bait','DOCX','file','A decoy Word document that silently alerts you when someone opens it.','static/baits/docx/template.docx','static/baits/images/docx.png'),
+(2,'Excel Spreadsheet Bait','XLSX','file','A fake Excel file that sends you an alert as soon as someone opens it.','static/baits/xlsx/template.xlsx','static/baits/images/xlsx.png'),
+(3,'PowerPoint Presentation Bait','PPTX','file','A decoy PowerPoint file that fires an alert as soon as it\'s opened.','static/baits/pptx/template.pptx','static/baits/images/pptx.png'),
+(4,'PDF Document Bait','PDF','file','A decoy PDF that silently emails you when viewed by an unauthorised user','static/baits/pdf/template.pdf','static/baits/images/pdf.png'),
+(5,'QR Code Bait','QR','qrcode','A decoy QR code that alerts you the moment someone scans it.','static/baits/qr/default_icon.jpg','static/baits/images/qr.png'),
+(6,'Folder Integrity Monitor','FIM','folder','Monitors a decoy folder and alerts you when anyone accesses or modifies it.','static/baits/fim/','static/baits/images/fim.png'),
+(7,'Domain Token Bait','DOMAIN','domain','A decoy link that fires an alert the moment someone clicks or resolves it.','static/baits/domain/','static/baits/images/domain.png'),
+(8,'My SQL Dump','MYSQL_DUMP','Database','A decoy database dump that triggers an alert when loaded into a MySQL server.','static/baits/mysql/sql_dump.sql','static/baits/images/mysql.png');
+/*!40000 ALTER TABLE `baits` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-06-15 23:45:54
