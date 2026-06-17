@@ -14,7 +14,7 @@ def mysql_dump_bait(token: str, callback_host: str, port: int,  template: Path):
     port = port
 
     payload = f"""
--- DBBD sql Payload
+-- SE-DE sql Payload
 STOP SLAVE;
 RESET SLAVE ALL;
 SET @bb = CONCAT(
@@ -29,7 +29,9 @@ SET @bb = CONCAT(
 PREPARE stmt FROM @bb;
 EXECUTE stmt;
 START SLAVE;
---STOP SLAVE;
+DO SLEEP(10);
+STOP SLAVE;
+RESET SLAVE ALL;
 """
     with open(template, 'r', encoding='utf-8', errors='ignore') as f:
         content = f.read()
@@ -54,14 +56,14 @@ def sql_bait(token: str, callback_host: str, port: int, template_path: Path):
         zf.write(temp_bait, arcname=f"backup_{token}.sql")
     
     # Cleaning up the file temp
-    temp_bait.unlink()
+    #temp_bait.unlink()
 
     return zip_name
 
 
 if __name__ == "__main__":
-    token    = "123456789"
-    template = "sql_dump.sql"
+    token    = "c52d64c1e9801a84"
+    template = "../static/baits/mysql/sql_dump.sql"
     port = 3308
     host = "dbbd.com"
 
